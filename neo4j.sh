@@ -41,13 +41,10 @@ then
   docker exec neo4j bash -c "echo 'dbms.unmanaged_extension_classes=n10s.endpoint=/rdf' >> conf/neo4j.conf"
   docker restart neo4j
 
-  echo "Import knowledge graph..."
-  docker exec neo4j bash -c "${NEO4J_HOME}/bin/cypher-shell -u neo4j -p 'admin' \"CREATE CONSTRAINT n10s_unique_uri ON (r:Resource) ASSERT r.uri IS UNIQUE;\""
-  docker exec neo4j bash -c "${NEO4J_HOME}/bin/cypher-shell -u neo4j -p 'jazero_admin' 'call n10s.graphconfig.init( { handleMultival: \"OVERWRITE\",  handleVocabUris: \"SHORTEN\", keepLangTag: false, handleRDFTypes: \"NODES\" })'"
-  docker exec neo4j bash -c "rm -rf ${NEO4J_IMPORT}/*"
-
-  docker exec neo4j bash -c "for f in /kg/* ; do FILE_CLEAN=$(basename ${f}) ; iconv -f utf-8 -t ascii -c "${f}" | grep -E '^<(https?|ftp|file)://[-A-Za-z0-9\+&@#/%?=~_|!:,.;]*[A-Za-z0-9\+&@#/%?=~_|]>\W<' | grep -Fv 'xn--b1aew' > ${NEO4J_IMPORT}/${FILE_CLEAN} ; done"
-  docker exec neo4j bash -c "for f in ${NEO4J_IMPORT}/* ; then filename=$(basename ${f}) ; ${NEO4J_HOME}/bin/cypher-shell -u neo4j -p 'admin' \"CALL  n10s.rdf.import.fetch(\"file://${NEO4J_IMPORT}/${filename}\",\"Turtle\");\" ; done"
+  echo "Importing knowledge graph..."
+  sleep 1m
+  docker cp load.sh neo4j:/var/lib/neo4j
+  docker exec neo4j bash -c "./load.sh"
 
   echo
   echo "Done"
