@@ -8,7 +8,7 @@ IMAGE="neo4j:4.1.4"
 
 if [ "$#" -eq 1 ]
 then
-  NEO4J_HOME="${PWD}"
+  NEO4J_HOME="/var/lib/neo4j"
   NEO4J_IMPORT=${NEO4J_HOME}"/import"
   KG_DIR=$1
 
@@ -35,6 +35,7 @@ then
       -e NEO4J_apoc_import_file_use_neo4j_config=false \
       ${IMAGE}
 
+  echo "Installing Neosemantics..."
   sleep 1m
   docker exec neo4j wget -P plugins/ https://github.com/neo4j-labs/neosemantics/releases/download/4.1.0.1/neosemantics-4.1.0.1.jar
   docker exec neo4j bash -c "echo 'dbms.unmanaged_extension_classes=n10s.endpoint=/rdf' >> conf/neo4j.conf"
