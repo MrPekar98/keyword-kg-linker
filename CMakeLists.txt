@@ -12,7 +12,5 @@ file(GLOB sources
 add_library(linkerlib STATIC ${sources})
 #target_link_libraries(linkerlib)
 
-add_executable(keyword-kg-linker src/main.cpp
-        include/connector/neo4j.h
-        src/connector/neo4j.cpp)
+add_executable(keyword-kg-linker src/main.cpp)
 target_link_libraries(keyword-kg-linker linkerlib)
