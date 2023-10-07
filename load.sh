@@ -5,7 +5,7 @@ set -e
 NEO4J_HOME=$1
 NEO4J_IMPORT=$2
 
-${NEO4J_HOME}./bin/cypher-shell -u neo4j -p 'admin' "CREATE CONSTRAINT n10s_unique_uri ON (r:Resource) ASSERT r.uri IS UNIQUE;"
+${NEO4J_HOME}/bin/cypher-shell -u neo4j -p 'admin' "CREATE CONSTRAINT n10s_unique_uri ON (r:Resource) ASSERT r.uri IS UNIQUE;"
 ${NEO4J_HOME}/bin/cypher-shell -u neo4j -p 'admin' 'call n10s.graphconfig.init( { handleMultival: "OVERWRITE",  handleVocabUris: "SHORTEN", keepLangTag: false, handleRDFTypes: "NODES" })'
 rm -rf import/*
 
