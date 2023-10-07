@@ -44,7 +44,7 @@ then
   echo "Importing knowledge graph..."
   sleep 1m
   docker cp load.sh neo4j:/var/lib/neo4j
-  docker exec neo4j bash -c "./load.sh"
+  docker exec neo4j bash -c "./load.sh ${NEO4J_HOME} ${NEO4J_IMPORT}"
 
   echo
   echo "Done"
