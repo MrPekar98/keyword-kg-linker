@@ -27,7 +27,7 @@ then
     exit 1
   fi
 
-  docker run -d -p ${PORT}:${PORT} -p ${PORT_BULP}:${PORT_BULP} --name neo4j -v ${PWD}/${KG_DIR}:/kg \
+  docker run -d -p ${PORT}:${PORT} -p ${PORT_BULP}:${PORT_BULP} --name neo4j -v ${PWD}/${KG_DIR}:/kg ${IMAGE} \
       -e NEO4J_AUTH=neo4j/admin \
       -e NEO4JLABS_PLUGINS='[\"apoc\", \"n10s\"]' \
       -e NEO4J_dbms_security_procedures_unrestricted=apoc.* \
@@ -48,6 +48,12 @@ then
   echo
   echo "Done"
 else
+  if [[ ! "$(docker images -q ${IMAGE})" == "" ]]
+  then
+    echo "Docker image does not exist. Add knowledge graph directory as parameter to setup Neo4J."
+    exit 1
+  fi
+
   echo "Starting Neo4J..."
   echo
 
