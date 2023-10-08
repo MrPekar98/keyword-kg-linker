@@ -3,9 +3,4 @@
 
 #include <neo4j-client.h>
 
-class neo4j
-{
-
-};
-
 #endif

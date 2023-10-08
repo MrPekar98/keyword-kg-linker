@@ -1,20 +1,22 @@
 FROM ubuntu:18.04
 
 RUN apt update
-RUN apt install cmake g++ make apt install software-properties-common git -y
+RUN apt install cmake g++ make software-properties-common libssl-dev git wget zlib1g-dev xz-utils libxapian-dev uuid-dev -y
 RUN add-apt-repository ppa:cleishm/neo4j
 RUN apt-get update
 RUN apt-get install neo4j-client libneo4j-client-dev -y
 
 WORKDIR /deps
-RUN git clone git://clucene.git.sourceforge.net/gitroot/clucene/clucene
-RUN mkdir clucene/build
-WORKDIR /deps/clucene/build
-RUN cmake ..
+RUN wget https://oligarchy.co.uk/xapian/1.4.23/xapian-core-1.4.23.tar.xz -O xapian.tar.xz
+RUN xz -dc xapian.tar.xz | tar xf -
+RUN rm xapian.tar.xz
+WORKDIR xapian-core-1.4.23
+RUN ./configure --prefix=/opt
 RUN make
 RUN make install
 WORKDIR /deps
-RUN rm -rf clucene && mkdir CLucene/ && mv /usr/local/include/* CLucene/
+RUN mkdir xapian
+RUN mv /opt/include/* xapian/
 
 WORKDIR /linker
 RUN mkdir src/
@@ -22,11 +24,10 @@ RUN mkdir include/
 RUN mkdir build/
 ADD src/ src/
 ADD include/ include/
+ADD CMakeLists.txt .
 
 WORKDIR build/
 RUN cmake ..
+RUN make
 
-WORKDIR /linker
-RUN cmake --build -j 6 .
-
-CMD ["./build/keyword-kg-linker", "-index", "/data"]
+CMD ["./keyword-kg-linker", "-index", "/data"]

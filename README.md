@@ -42,3 +42,28 @@ For example, if a CSV table is in `tables/table.csv` and the results should be p
 ```
 
 The results with linked entities of entities identified in `tables/table.csv` can now be found in `results/`.
+
+## Development
+To work with this repository, the following dependencies must be installed:
+
+- Xapian
+- Neo4J
+
+The Docker file `develop.dockerfile` defines an image with a work environment for development of this repository.
+The image contains all dependencies, so build the image with the following command, and develop from within a container on this image.
+
+```bash
+docker build -t keyword-kg-linker-dev .
+```
+
+You can run this container in most IDEs, but to manually run a container, use the following command:
+
+```bash
+docker run --rm -it -v ${PWD}:/home keyword-kg-linker-dev bash
+```
+
+On Windows, run the following command to start a container:
+
+```bash
+docker run --rm -it -v %cd%:/home keyword-kg-linker-dev bash
+```

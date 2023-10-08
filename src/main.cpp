@@ -1,4 +1,5 @@
 #include <iostream>
+#include <xapian.h>
 
 /**
  * Usage:
@@ -9,6 +10,7 @@
  */
 int main(int argc, char** argv)
 {
-    std::cout << "Hello, World!" << std::endl;
+
+
     return 0;
 }
