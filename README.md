@@ -53,7 +53,7 @@ The Docker file `develop.dockerfile` defines an image with a work environment fo
 The image contains all dependencies, so build the image with the following command, and develop from within a container on this image.
 
 ```bash
-docker build -t keyword-kg-linker-dev .
+docker build -t keyword-kg-linker-dev -f develop.dockerfile .
 ```
 
 You can run this container in most IDEs, but to manually run a container, use the following command:
