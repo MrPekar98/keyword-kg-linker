@@ -27,7 +27,8 @@ then
     exit 1
   fi
 
-  docker run -d -p ${PORT}:${PORT} -p ${PORT_BULP}:${PORT_BULP} --name neo4j -v ${PWD}/${KG_DIR}:/kg \
+  docker network inspect linker-dev > /dev/null 2>&1 || docker network create --driver bridge linker-dev
+  docker run -d -p ${PORT}:${PORT} --network linker-dev -p ${PORT_BULP}:${PORT_BULP} --name neo4j -v ${PWD}/${KG_DIR}:/kg \
       -e NEO4J_AUTH=neo4j/admin \
       -e NEO4JLABS_PLUGINS='[\"apoc\", \"n10s\"]' \
       -e NEO4J_dbms_security_procedures_unrestricted=apoc.* \

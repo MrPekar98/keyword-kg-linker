@@ -59,7 +59,7 @@ docker build -t keyword-kg-linker-dev -f develop.dockerfile .
 You can run this container in most IDEs, but to manually run a container, use the following command:
 
 ```bash
-docker run --rm -it -v ${PWD}:/home keyword-kg-linker-dev bash
+docker run --rm -it -network linker-dev -v ${PWD}:/home keyword-kg-linker-dev bash
 ```
 
 On Windows, run the following command to start a container:
