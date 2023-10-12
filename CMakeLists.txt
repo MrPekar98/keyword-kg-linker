@@ -1,3 +1,4 @@
+cmake_minimum_required(VERSION 3.27)
 project(keyword-kg-linker)
 
 set(CMAKE_CXX_COMPILER "g++")

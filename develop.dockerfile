@@ -1,7 +1,7 @@
 FROM ubuntu:18.04
 
 RUN apt update
-RUN apt install cmake g++ make software-properties-common libssl-dev git wget zlib1g-dev xz-utils libxapian-dev uuid-dev -y
+RUN apt install build-essential manpages-dev gdb cmake g++ make software-properties-common libssl-dev git wget zlib1g-dev xz-utils libxapian-dev uuid-dev -y
 RUN add-apt-repository ppa:cleishm/neo4j
 RUN apt-get update
 RUN apt-get install neo4j-client libneo4j-client-dev -y
