@@ -4,7 +4,7 @@ set -e
 
 PORT_BULP="7687"
 PORT="7474"
-IMAGE="neo4j:4.1.4"
+IMAGE="neo4j:3.5"
 
 if [ "$#" -eq 1 ]
 then
@@ -29,7 +29,7 @@ then
 
   docker network inspect linker-dev > /dev/null 2>&1 || docker network create --driver bridge linker-dev
   docker run -d -p ${PORT}:${PORT} --network linker-dev -p ${PORT_BULP}:${PORT_BULP} --name neo4j -v ${PWD}/${KG_DIR}:/kg \
-      -e NEO4J_AUTH=neo4j/admin \
+      -e NEO4J_AUTH=none \
       -e NEO4JLABS_PLUGINS='[\"apoc\", \"n10s\"]' \
       -e NEO4J_dbms_security_procedures_unrestricted=apoc.* \
       -e NEO4J_apoc_export_file_enabled=true \
