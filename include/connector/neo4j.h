@@ -22,7 +22,6 @@ public:
     std::vector<std::pair<std::string, std::string>> labels(const std::string& labelPredicate) const;
 
 private:
-    std::string host;
     neo4j_connection_t* connection;
 };
 
