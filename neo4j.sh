@@ -4,7 +4,7 @@ set -e
 
 PORT_BULP="7687"
 PORT="7474"
-IMAGE="neo4j:3.5"
+IMAGE="neo4j:4.1.4"
 
 if [ "$#" -eq 1 ]
 then
