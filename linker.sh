@@ -12,9 +12,9 @@ fi
 
 if [[ "$#" -eq 2 ]]
 then
-  DATA_DIR=$3
+  DATA_DIR=$2
 
-  if [[ ! -d ${DATA_DIR}]]
+  if [[ ! -d ${DATA_DIR} ]]
   then
     echo "Directory '${DATA_DIR}' does not exist"
     exit 1

@@ -81,7 +81,7 @@ public final class ArgParser
 
     private ArgParser(String[] args)
     {
-        this.command = Command.parse(args[1]);
+        this.command = Command.parse(args[0]);
 
         if (this.command == null)
         {
@@ -89,7 +89,7 @@ public final class ArgParser
             this.parseError = "'" + args[1] + "' not recognized";
         }
 
-        for (int i = 2; i < args.length; i++)
+        for (int i = 1; i < args.length; i++)
         {
             Parameter p = Parameter.parse(args[i]);
 
@@ -112,7 +112,7 @@ public final class ArgParser
 
     private void check()
     {
-        if (this.command == Command.INDEX)
+        if (this.command == Command.LINK)
         {
             if (this.parameters.size() != 1)
             {
@@ -135,21 +135,48 @@ public final class ArgParser
             }
         }
 
-        else    // Otherwise, it's guaranteed to be Command.LINK
+        else    // Otherwise, it's guaranteed to be Command.INDEX
         {
             if (this.parameters.size() != 3)
             {
                 this.parsed = false;
-                this.parseError = "Expects two parameters when linking";
+                this.parseError = "Expects three parameters when indexing";
             }
 
             Iterator<Parameter> params = this.parameters.iterator();
+            boolean hasDir = false, hasOutput = false, hasTable = false;
 
             while (params.hasNext())
             {
                 Parameter p = params.next();
 
+                if (p == Parameter.DIRECTORY)
+                {
+                    hasDir = true;
+                }
 
+                else if (p == Parameter.TABLE)
+                {
+                    hasTable = true;
+                }
+
+                else if (p == Parameter.OUTPUT)
+                {
+                    hasOutput = true;
+                }
+
+                if (p.getValue() == null)
+                {
+                    this.parsed = false;
+                    this.parseError = "Missing value for '" + p + "' parameter";
+                    return;
+                }
+            }
+
+            if (!(hasDir && hasOutput && hasTable))
+            {
+                this.parsed = false;
+                this.parseError = "Indexing requires parameters '-dir', '-table', and '-output'";
             }
         }
     }
@@ -167,5 +194,10 @@ public final class ArgParser
     public Command getCommand()
     {
         return this.command;
+    }
+
+    public Set<Parameter> getParameters()
+    {
+        return this.parameters;
     }
 }
