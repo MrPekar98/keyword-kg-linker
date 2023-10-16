@@ -20,7 +20,7 @@ If this is the first time, Neo4J will be setup, Neosemantics installed, and Neo4
 To start the instance after the first time, simply start the script without any parameters.
 The entity linker will not work without a populated Neo4J instance running.
 
-Now, the entity linker needs to be indexes using the populated Neo4J instance.
+Now, the entity linker needs to be indexed using the populated Neo4J instance.
 
 ```bash
 ./linker.sh -index
