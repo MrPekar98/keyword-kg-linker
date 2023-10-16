@@ -23,47 +23,23 @@ The entity linker will not work without a populated Neo4J instance running.
 Now, the entity linker needs to be indexed using the populated Neo4J instance.
 
 ```bash
-./linker.sh -index
+./linker.sh -dir <DIRECTORY>
 ```
 
+You must specify the directory in which to save the index files.
 When the script is called the first time, it will build a Docker image before it will run the container to index the entity linker.
 
 ## Usage
 To link a table, call the `linker.sh` script with two arguments: the path to the table CSV file and the output directory.
 
 ```bash
-./linker.sh -table <CSV_FILE> -output <OUTPUT_DIRECTORY>
+./linker.sh -table <CSV_FILE> -output <OUTPUT_DIRECTORY> -dir <DIRECTORY>
 ```
 
-For example, if a CSV table is in `tables/table.csv` and the results should be put in `results/`, call the `linker.sh` script the following way:
+For example, if a CSV table is in `tables/table.csv`, the results should be put in `results/`, and the index files are in `data/`, call the `linker.sh` script the following way:
 
 ```bash
-./linker.sh -table tables/table.csv -output results/
+./linker.sh -table tables/table.csv -output results/ -dir results/
 ```
 
-The results with linked entities of entities identified in `tables/table.csv` can now be found in `results/`.
-
-## Development
-To work with this repository, the following dependencies must be installed:
-
-- Xapian
-- Neo4J
-
-The Docker file `develop.dockerfile` defines an image with a work environment for development of this repository.
-The image contains all dependencies, so build the image with the following command, and develop from within a container on this image.
-
-```bash
-docker build -t keyword-kg-linker-dev -f develop.dockerfile .
-```
-
-You can run this container in most IDEs, but to manually run a container, use the following command:
-
-```bash
-docker run --rm -it --network linker-dev -v ${PWD}:/home keyword-kg-linker-dev bash
-```
-
-On Windows, run the following command to start a container:
-
-```bash
-docker run --rm -it -v %cd%:/home keyword-kg-linker-dev bash
-```
+The results with linked entities of entities identified in `tables/table.csv` can now be found in `results/` using the indexes stored in `data/`.
