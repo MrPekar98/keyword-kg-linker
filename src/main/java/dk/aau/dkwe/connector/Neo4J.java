@@ -12,7 +12,7 @@ public final class Neo4J implements AutoCloseable
 
     public Neo4J()
     {
-        String dbUri = "bolt://localhost:7687",
+        String dbUri = "bolt://neo4j:7687",
                 dbUser = "neo4j",
                 dbPassword = "admin";
         this.driver = GraphDatabase.driver(dbUri, AuthTokens.basic(dbUser, dbPassword),
@@ -41,16 +41,14 @@ public final class Neo4J implements AutoCloseable
         }
     }
 
-    public Set<Pair<String, String>> labels(String neo4JPredicate)
+    public Set<Pair<String, String>> labels(String neo4jPredicate)
     {
-        Map<String, Object> parameters = new HashMap<>();
-        parameters.put("predicate", neo4JPredicate);
-
         try (Session session = this.driver.session())
         {
             return session.readTransaction(tx -> {
                 Set<Pair<String, String>> labels = new HashSet<>();
-                Result r = tx.run("MATCH (n:Resource) WHERE EXISTS() RETURN n.uri AS uri, a.$predicate AS label", parameters);
+                Result r = tx.run("MATCH (n:Resource) WHERE EXISTS(n." + neo4jPredicate +
+                        ") RETURN n.uri AS uri, n." + neo4jPredicate + " AS label");
 
                 for (var result : r.list())
                 {

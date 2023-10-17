@@ -20,7 +20,7 @@ then
     exit 1
   fi
 
-  docker run --rm -v ${PWD}/${DATA_DIR}:/data ${IMAGE} \
+  docker run --rm -v ${PWD}/${DATA_DIR}:/data --network linker-dev ${IMAGE} \
       java -jar keywork-linker.jar index -dir /data
 elif [[ "$#" -eq 6 ]]
 then
@@ -78,7 +78,7 @@ then
   mkdir -p {OUTPUT}
   TABLE_FILENAME=$(basename ${TABLE})
   TABLE_DIR=$(dirname $TABLE)
-  docker run --rm -v ${PWD}/${DIRECTORY}:/data -v ${PWD}/${OUTPUT}:/output -v ${PWD}/${TABLE_DIR}:/table \
+  docker run --rm -v ${PWD}/${DIRECTORY}:/data -v ${PWD}/${OUTPUT}:/output -v ${PWD}/${TABLE_DIR}:/table --network linker-dev \
       ${IMAGE} java -jar keywork-linker.jar link -table /table/${TABLE_FILENAME} -output /output -dir /data
 else
   echo "Did not understand parameters"

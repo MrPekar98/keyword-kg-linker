@@ -112,7 +112,7 @@ public final class ArgParser
 
     private void check()
     {
-        if (this.command == Command.LINK)
+        if (this.command == Command.INDEX)
         {
             if (this.parameters.size() != 1)
             {
@@ -135,12 +135,12 @@ public final class ArgParser
             }
         }
 
-        else    // Otherwise, it's guaranteed to be Command.INDEX
+        else    // Otherwise, it's guaranteed to be Command.LINK
         {
             if (this.parameters.size() != 3)
             {
                 this.parsed = false;
-                this.parseError = "Expects three parameters when indexing";
+                this.parseError = "Expects three parameters when linking";
             }
 
             Iterator<Parameter> params = this.parameters.iterator();
@@ -176,7 +176,7 @@ public final class ArgParser
             if (!(hasDir && hasOutput && hasTable))
             {
                 this.parsed = false;
-                this.parseError = "Indexing requires parameters '-dir', '-table', and '-output'";
+                this.parseError = "Linking requires parameters '-dir', '-table', and '-output'";
             }
         }
     }

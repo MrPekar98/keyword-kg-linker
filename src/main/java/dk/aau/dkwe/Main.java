@@ -1,7 +1,6 @@
 package dk.aau.dkwe;
 
 import dk.aau.dkwe.connector.Neo4J;
-import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.text.similarity.LevenshteinDistance;
 
 import java.io.File;
@@ -40,7 +39,7 @@ public class Main
 
         String txt1 = "Hello, World!", txt2 = "Hello, Friend!";
         int distance = LevenshteinDistance.getDefaultInstance().apply(txt1, txt2);
-        System.out.printf("Levenshtein distance is %d", distance);
+        System.out.printf("Levenshtein distance is %d\n", distance);
 
         try (Neo4J db = new Neo4J())
         {
