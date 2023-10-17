@@ -25,6 +25,11 @@
             <artifactId>commons-text</artifactId>
             <version>1.10.0</version>
         </dependency>
+        <dependency>  <!-- Connect to Neo4j -->
+            <groupId>org.neo4j.driver</groupId>
+            <artifactId>neo4j-java-driver</artifactId>
+            <version>4.1.1</version>
+        </dependency>
     </dependencies>
 
     <build>
