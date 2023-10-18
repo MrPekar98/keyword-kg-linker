@@ -1,10 +1,13 @@
 package dk.aau.dkwe;
 
+import dk.aau.dkwe.candidate.IndexBuilder;
 import dk.aau.dkwe.connector.Neo4J;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.text.similarity.LevenshteinDistance;
 
 import java.io.File;
+import java.io.IOException;
+import java.util.Set;
 
 // TODO: Add argument to linking command to specify size of candidate set
 public class Main
@@ -39,33 +42,64 @@ public class Main
             }
         }
 
-        String txt1 = "Hello, World!", txt2 = "Hello, Friend!";
-        int distance = LevenshteinDistance.getDefaultInstance().apply(txt1, txt2);
-        System.out.printf("Levenshtein distance is %d\n\n", distance);
-
-        try (Neo4J db = new Neo4J())
+        try
         {
-            var labels = db.labels("rdfs__label").iterator();
-            System.out.println("Entity labels:\n");
-
-            for (int i = 0; i < 3; i++)
+            switch (parser.getCommand())
             {
-                if (labels.hasNext())
-                {
-                    Pair<String, String> label = labels.next();
-                    System.out.println(label.getKey() + ": " + label.getValue());
-                }
-
-                else
-                {
-                    break;
-                }
+                case INDEX -> index(parser.getParameters());
+                case LINK -> link(parser.getParameters());
+                default -> System.out.println("Did not recognize command '" + parser.getCommand() + "'");
             }
+        }
+
+        catch (IOException e)
+        {
+            System.err.println("IOException: " + e.getMessage());
+        }
+
+        catch (RuntimeException e)
+        {
+            System.err.println("RuntimeException: " + e.getMessage());
         }
 
         catch (Exception e)
         {
-            System.err.println("Neo4J exception: " + e.getMessage());
+            System.err.println("Exception: " + e.getMessage());
         }
+
+        /*String txt1 = "Hello, World!", txt2 = "Hello, Friend!";
+        int distance = LevenshteinDistance.getDefaultInstance().apply(txt1, txt2);
+        System.out.printf("Levenshtein distance is %d\n\n", distance);*/
+    }
+
+    private static void index(Set<ArgParser.Parameter> parameters) throws Exception
+    {
+        System.out.println("Indexing...");
+
+        String predicate = null;
+        File directory = null;
+
+        for (ArgParser.Parameter param : parameters)
+        {
+            if (param == ArgParser.Parameter.PREDICATE)
+            {
+                predicate = param.getValue();
+            }
+
+            else
+            {
+                directory = new File(param.getValue());
+            }
+        }
+
+        Neo4J neo4J = new Neo4J();
+        var labels = neo4J.labels(predicate);
+        IndexBuilder.luceneBuilder(labels, directory);
+        neo4J.close();
+    }
+
+    private static void link(Set<ArgParser.Parameter> parameters)
+    {
+
     }
 }
