@@ -66,7 +66,8 @@ public final class ArgParser
         {
             return DIRECTORY.toString().equals(str) ? DIRECTORY :
                     TABLE.toString().equals(str) ? TABLE :
-                            OUTPUT.toString().equals(str) ? OUTPUT : null;
+                            OUTPUT.toString().equals(str) ? OUTPUT :
+                                    PREDICATE.toString().equals(str) ? PREDICATE : null;
         }
     }
 
