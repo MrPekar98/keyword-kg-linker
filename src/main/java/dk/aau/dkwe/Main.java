@@ -7,6 +7,9 @@ import org.apache.commons.text.similarity.LevenshteinDistance;
 
 import java.io.File;
 import java.io.IOException;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.temporal.Temporal;
 import java.util.Set;
 
 // TODO: Add argument to linking command to specify size of candidate set
@@ -74,6 +77,7 @@ public class Main
 
     private static void index(Set<ArgParser.Parameter> parameters) throws Exception
     {
+        Instant start = Instant.now();
         System.out.println("Indexing...");
 
         String predicate = null;
@@ -96,7 +100,9 @@ public class Main
         var labels = neo4J.labels(predicate);
         IndexBuilder.luceneBuilder(labels, directory);
         neo4J.close();
-        System.out.println("Indexing done");
+
+        Duration duration = Duration.between(start, Instant.now());
+        System.out.println("Indexing done in " + duration.toString());
     }
 
     private static void link(Set<ArgParser.Parameter> parameters)
