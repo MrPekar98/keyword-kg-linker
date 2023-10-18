@@ -36,7 +36,8 @@ public final class ArgParser
         DIRECTORY("-dir"),
         TABLE("-table"),
         OUTPUT("-output"),
-        PREDICATE("-predicate");
+        PREDICATE("-predicate"),
+        CANDIDATES("-candidates");
 
         Parameter(String parameter)
         {
@@ -67,7 +68,8 @@ public final class ArgParser
             return DIRECTORY.toString().equals(str) ? DIRECTORY :
                     TABLE.toString().equals(str) ? TABLE :
                             OUTPUT.toString().equals(str) ? OUTPUT :
-                                    PREDICATE.toString().equals(str) ? PREDICATE : null;
+                                    PREDICATE.toString().equals(str) ? PREDICATE :
+                                            CANDIDATES.toString().equals(str) ? CANDIDATES : null;
         }
     }
 
@@ -167,32 +169,25 @@ public final class ArgParser
 
     private void checkLinking()
     {
-        if (this.parameters.size() != 3)
+        if (this.parameters.size() != 4)
         {
             this.parsed = false;
             this.parseError = "Expects three parameters when linking";
         }
 
         Iterator<Parameter> params = this.parameters.iterator();
-        boolean hasDir = false, hasOutput = false, hasTable = false;
+        boolean hasDir = false, hasOutput = false, hasTable = false, hasCandidates = false;
 
         while (params.hasNext())
         {
             Parameter p = params.next();
 
-            if (p == Parameter.DIRECTORY)
+            switch (p)
             {
-                hasDir = true;
-            }
-
-            else if (p == Parameter.TABLE)
-            {
-                hasTable = true;
-            }
-
-            else if (p == Parameter.OUTPUT)
-            {
-                hasOutput = true;
+                case DIRECTORY -> hasDir = true;
+                case TABLE -> hasTable = true;
+                case OUTPUT -> hasOutput = true;
+                case CANDIDATES -> hasCandidates = true;
             }
 
             if (p.getValue() == null)
@@ -203,7 +198,7 @@ public final class ArgParser
             }
         }
 
-        if (!(hasDir && hasOutput && hasTable))
+        if (!(hasDir && hasOutput && hasTable && hasCandidates))
         {
             this.parsed = false;
             this.parseError = "Linking requires parameters '-dir', '-table', and '-output'";

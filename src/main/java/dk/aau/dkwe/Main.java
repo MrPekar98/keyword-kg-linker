@@ -9,10 +9,8 @@ import java.io.File;
 import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
-import java.time.temporal.Temporal;
 import java.util.Set;
 
-// TODO: Add argument to linking command to specify size of candidate set
 public class Main
 {
     public static void main(String[] args)
@@ -107,6 +105,24 @@ public class Main
 
     private static void link(Set<ArgParser.Parameter> parameters)
     {
+        Instant start = Instant.now();
+        System.out.println("Linking...");
 
+        File resultDir = null, tableDir = null, indexDir = null;
+        int candidates = -1;
+
+        for (ArgParser.Parameter param : parameters)
+        {
+            switch (param)
+            {
+                case TABLE -> tableDir = new File(param.getValue());
+                case DIRECTORY -> indexDir = new File(param.getValue());
+                case OUTPUT -> resultDir = new File(param.getValue());
+                case CANDIDATES -> candidates = Integer.parseInt(param.getValue());
+            }
+        }
+
+        Duration duration = Duration.between(start, Instant.now());
+        System.out.println("Linking done in " + duration.toString());
     }
 }

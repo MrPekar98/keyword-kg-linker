@@ -45,11 +45,12 @@ then
 
   docker run --rm -v ${PWD}/${DATA_DIR}:/data --network linker-dev ${IMAGE} \
       java -jar keywork-linker.jar index -dir /data -predicate ${PREDICATE}
-elif [[ "$#" -eq 6 ]]   # Linking
+elif [[ "$#" -eq 8 ]]   # Linking
 then
   TABLE=""
   OUTPUT=""
   DIRECTORY=""
+  CANDIDATES=""
 
   if [[ $1 == "-table" ]]
   then
@@ -60,6 +61,9 @@ then
   elif [[ $1 == 'dir' ]]
   then
     DIRECTORY=$2
+  elif [[ $1 == "-candidates" ]]
+  then
+    CANDIDATES=$2
   else
     echo "Option '$1' was not recognized"
     exit 1
@@ -74,6 +78,9 @@ then
   elif [[ $3 == "-dir" ]]
   then
     DIRECTORY=$4
+  elif [[ $3 == "-candidates" ]]
+  then
+    CANDIDATES=$4
   else
     echo "Option '$3' was not recognized"
     exit 1
@@ -88,9 +95,28 @@ then
   elif [[ $5 == "-dir" ]]
   then
     DIRECTORY=$6
+  elif [[ $5 == "-candidates" ]]
+  then
+    CANDIDATES=$6
   else
     echo "Option '$5' was not recognized"
   fi
+
+  if [[ $7 == "-table" ]]
+    then
+      TABLE=$8
+    elif [[ $7 == "-output" ]]
+    then
+      OUTPUT=$8
+    elif [[ $7 == "-dir" ]]
+    then
+      DIRECTORY=$8
+    elif [[ $7 == "-candidates" ]]
+    then
+      CANDIDATES=$8
+    else
+      echo "Option '$7' was not recognized"
+    fi
 
   if [[ ! -f ${TABLE} ]]
   then
@@ -102,7 +128,7 @@ then
   TABLE_FILENAME=$(basename ${TABLE})
   TABLE_DIR=$(dirname $TABLE)
   docker run --rm -v ${PWD}/${DIRECTORY}:/data -v ${PWD}/${OUTPUT}:/output -v ${PWD}/${TABLE_DIR}:/table --network linker-dev \
-      ${IMAGE} java -jar keywork-linker.jar link -table /table/${TABLE_FILENAME} -output /output -dir /data
+      ${IMAGE} java -jar keywork-linker.jar link -table /table/${TABLE_FILENAME} -output /output -dir /data -candidates ${CANDIDATES}
 else
   echo "Did not understand parameters"
 fi

@@ -33,13 +33,14 @@ When the script is called the first time, it will build a Docker image before it
 To link a table, call the `linker.sh` script with two arguments: the path to the table CSV file and the output directory.
 
 ```bash
-./linker.sh -table <CSV_FILE> -output <OUTPUT_DIRECTORY> -dir <DIRECTORY>
+./linker.sh -table <CSV_FILE> -output <OUTPUT_DIRECTORY> -dir <DIRECTORY> -candidates <CANDIDATE_SET_SIZE>
 ```
 
 For example, if a CSV table is in `tables/table.csv`, the results should be put in `results/`, and the index files are in `data/`, call the `linker.sh` script the following way:
 
 ```bash
-./linker.sh -table tables/table.csv -output results/ -dir results/
+./linker.sh -table tables/table.csv -output results/ -dir data/ -candidates 50
 ```
 
 The results with linked entities of entities identified in `tables/table.csv` can now be found in `results/` using the indexes stored in `data/`.
+The accuracy and efficiency can be tuned with the `-candidates` parameter, which determines the size of the set of candidate entities.
