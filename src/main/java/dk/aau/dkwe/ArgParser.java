@@ -116,70 +116,97 @@ public final class ArgParser
     {
         if (this.command == Command.INDEX)
         {
-            if (this.parameters.size() != 1)
+            checkIndexing();
+        }
+
+        else
+        {
+            checkLinking();
+        }
+    }
+
+    private void checkIndexing()
+    {
+        if (this.parameters.size() != 2)
+        {
+            this.parsed = false;
+            this.parseError = "Expects two parameters when indexing";
+        }
+
+        Iterator<Parameter> parameters = this.parameters.iterator();
+        boolean hasDir = false, hasPredicate = false;
+
+        while (parameters.hasNext())
+        {
+            Parameter parameter = parameters.next();
+
+            if (parameter == Parameter.DIRECTORY)
             {
-                this.parsed = false;
-                this.parseError = "Expects one parameter when indexing";
+                hasDir = true;
             }
 
-            Parameter p = this.parameters.iterator().next();
-
-            if (p != Parameter.DIRECTORY)
+            else if (parameter == Parameter.PREDICATE)
             {
-                this.parsed = false;
-                this.parseError = "Expects a directory to store index files";
+                hasPredicate = true;
             }
 
-            else if (p.getValue() == null)
+            if (parameter.getValue() == null)
             {
                 this.parsed = false;
-                this.parseError = "Missing directory for '-dir' parameter";
+                this.parseError = "Missing value for '" + parameter + "' parameter";
+                return;
             }
         }
 
-        else    // Otherwise, it's guaranteed to be Command.LINK
+        if (!(hasDir && hasPredicate))
         {
-            if (this.parameters.size() != 3)
+            this.parsed = false;
+            this.parseError = "Indexing requires parameters '-dir' and '-predicate'";
+        }
+    }
+
+    private void checkLinking()
+    {
+        if (this.parameters.size() != 3)
+        {
+            this.parsed = false;
+            this.parseError = "Expects three parameters when linking";
+        }
+
+        Iterator<Parameter> params = this.parameters.iterator();
+        boolean hasDir = false, hasOutput = false, hasTable = false;
+
+        while (params.hasNext())
+        {
+            Parameter p = params.next();
+
+            if (p == Parameter.DIRECTORY)
+            {
+                hasDir = true;
+            }
+
+            else if (p == Parameter.TABLE)
+            {
+                hasTable = true;
+            }
+
+            else if (p == Parameter.OUTPUT)
+            {
+                hasOutput = true;
+            }
+
+            if (p.getValue() == null)
             {
                 this.parsed = false;
-                this.parseError = "Expects three parameters when linking";
+                this.parseError = "Missing value for '" + p + "' parameter";
+                return;
             }
+        }
 
-            Iterator<Parameter> params = this.parameters.iterator();
-            boolean hasDir = false, hasOutput = false, hasTable = false;
-
-            while (params.hasNext())
-            {
-                Parameter p = params.next();
-
-                if (p == Parameter.DIRECTORY)
-                {
-                    hasDir = true;
-                }
-
-                else if (p == Parameter.TABLE)
-                {
-                    hasTable = true;
-                }
-
-                else if (p == Parameter.OUTPUT)
-                {
-                    hasOutput = true;
-                }
-
-                if (p.getValue() == null)
-                {
-                    this.parsed = false;
-                    this.parseError = "Missing value for '" + p + "' parameter";
-                    return;
-                }
-            }
-
-            if (!(hasDir && hasOutput && hasTable))
-            {
-                this.parsed = false;
-                this.parseError = "Linking requires parameters '-dir', '-table', and '-output'";
-            }
+        if (!(hasDir && hasOutput && hasTable))
+        {
+            this.parsed = false;
+            this.parseError = "Linking requires parameters '-dir', '-table', and '-output'";
         }
     }
 
