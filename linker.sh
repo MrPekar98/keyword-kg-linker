@@ -10,9 +10,32 @@ then
   docker build -t ${IMAGE} .
 fi
 
-if [[ "$#" -eq 2 ]]
+if [[ "$#" -eq 4 ]]   # Indexing
 then
-  DATA_DIR=$2
+  DATA_DIR=""
+  PREDICATE=""
+
+  if [[ $1 == "-dir" ]]
+  then
+    DATA_DIR=$2
+  elif [[ $1 == "-predicate" ]]
+  then
+    PREDICATE=$2
+  else
+    echo "Option '$1' was not recognized"
+    exit 1
+  fi
+
+  if [[ $3 == "-dir" ]]
+  then
+    DATA_DIR=$4
+  elif [[ $3 == '-predicate' ]]
+  then
+    PREDICATE=$4
+  else
+    echo "Option '$3' was not recognized"
+    exit 1
+  fi
 
   if [[ ! -d ${DATA_DIR} ]]
   then
@@ -21,8 +44,8 @@ then
   fi
 
   docker run --rm -v ${PWD}/${DATA_DIR}:/data --network linker-dev ${IMAGE} \
-      java -jar keywork-linker.jar index -dir /data
-elif [[ "$#" -eq 6 ]]
+      java -jar keywork-linker.jar index -dir /data -predicate ${PREDICATE}
+elif [[ "$#" -eq 6 ]]   # Linking
 then
   TABLE=""
   OUTPUT=""

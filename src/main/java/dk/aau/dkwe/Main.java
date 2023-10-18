@@ -1,10 +1,12 @@
 package dk.aau.dkwe;
 
 import dk.aau.dkwe.connector.Neo4J;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.text.similarity.LevenshteinDistance;
 
 import java.io.File;
 
+// TODO: Add argument to linking command to specify size of candidate set
 public class Main
 {
     public static void main(String[] args)
@@ -39,15 +41,25 @@ public class Main
 
         String txt1 = "Hello, World!", txt2 = "Hello, Friend!";
         int distance = LevenshteinDistance.getDefaultInstance().apply(txt1, txt2);
-        System.out.printf("Levenshtein distance is %d\n", distance);
+        System.out.printf("Levenshtein distance is %d\n\n", distance);
 
         try (Neo4J db = new Neo4J())
         {
+            var labels = db.labels("rdfs__label").iterator();
             System.out.println("Entity labels:\n");
 
-            for (var label : db.labels("rdfs__label"))
+            for (int i = 0; i < 3; i++)
             {
-                System.out.println(label.getKey() + ": " + label.getValue());
+                if (labels.hasNext())
+                {
+                    Pair<String, String> label = labels.next();
+                    System.out.println(label.getKey() + ": " + label.getValue());
+                }
+
+                else
+                {
+                    break;
+                }
             }
         }
 

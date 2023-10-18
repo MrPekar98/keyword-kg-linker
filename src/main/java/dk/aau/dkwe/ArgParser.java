@@ -35,7 +35,8 @@ public final class ArgParser
     {
         DIRECTORY("-dir"),
         TABLE("-table"),
-        OUTPUT("-output");
+        OUTPUT("-output"),
+        PREDICATE("-predicate");
 
         Parameter(String parameter)
         {

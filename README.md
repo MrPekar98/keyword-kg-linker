@@ -23,10 +23,10 @@ The entity linker will not work without a populated Neo4J instance running.
 Now, the entity linker needs to be indexed using the populated Neo4J instance.
 
 ```bash
-./linker.sh -dir <DIRECTORY>
+./linker.sh -dir <DIRECTORY> -predicate <LABEL_PREDICATE>
 ```
 
-You must specify the directory in which to save the index files.
+You must specify the directory in which to save the index files and the KG predicate to retrieve entity labels in Neo4J.
 When the script is called the first time, it will build a Docker image before it will run the container to index the entity linker.
 
 ## Usage
