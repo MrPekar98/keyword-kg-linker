@@ -96,6 +96,7 @@ public class Main
         var labels = neo4J.labels(predicate);
         IndexBuilder.luceneBuilder(labels, directory);
         neo4J.close();
+        System.out.println("Indexing done");
     }
 
     private static void link(Set<ArgParser.Parameter> parameters)

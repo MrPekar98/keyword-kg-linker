@@ -19,7 +19,7 @@ public final class LuceneIndexBuilder
 {
     public static LuceneIndex build(Set<Pair<String, String>> entries, File directory) throws IOException
     {
-        if (directory.exists())
+        if (directory.listFiles() != null && directory.listFiles().length > 0)
         {
             throw new IllegalArgumentException("Directory '" + directory.getAbsolutePath() + "' already exists");
         }
