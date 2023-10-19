@@ -2,6 +2,9 @@ package dk.aau.dkwe;
 
 import dk.aau.dkwe.candidate.IndexBuilder;
 import dk.aau.dkwe.connector.Neo4J;
+import dk.aau.dkwe.disambiguation.LevenshteinRanker;
+import dk.aau.dkwe.disambiguation.Ranker;
+import dk.aau.dkwe.disambiguation.Result;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.text.similarity.LevenshteinDistance;
 
@@ -9,6 +12,7 @@ import java.io.File;
 import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.List;
 import java.util.Set;
 
 public class Main
@@ -67,10 +71,6 @@ public class Main
         {
             System.err.println("Exception: " + e.getMessage());
         }
-
-        /*String txt1 = "Hello, World!", txt2 = "Hello, Friend!";
-        int distance = LevenshteinDistance.getDefaultInstance().apply(txt1, txt2);
-        System.out.printf("Levenshtein distance is %d\n\n", distance);*/
     }
 
     private static void index(Set<ArgParser.Parameter> parameters) throws Exception
@@ -100,7 +100,7 @@ public class Main
         neo4J.close();
 
         Duration duration = Duration.between(start, Instant.now());
-        System.out.println("Indexing done in " + duration.toString());
+        System.out.println("Indexing done in " + duration.toString().substring(2));
     }
 
     private static void link(Set<ArgParser.Parameter> parameters)
@@ -122,7 +122,16 @@ public class Main
             }
         }
 
+        List<String> corpus = List.of("Testing", "Many Tests", "Tests");
+        List<Result<String>> results = LevenshteinRanker.levenshteinRank().rank("Test", corpus);
+        int rank = 1;
+
+        for (Result<String> res : results)
+        {
+            System.out.println(rank++ + ": " + res);
+        }
+
         Duration duration = Duration.between(start, Instant.now());
-        System.out.println("Linking done in " + duration.toString());
+        System.out.println("Linking done in " + duration.toString().substring(2));
     }
 }
