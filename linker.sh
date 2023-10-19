@@ -124,7 +124,7 @@ then
     exit 1
   fi
 
-  mkdir -p {OUTPUT}
+  mkdir -p ${OUTPUT}
   TABLE_FILENAME=$(basename ${TABLE})
   TABLE_DIR=$(dirname $TABLE)
   docker run --rm -v ${PWD}/${DIRECTORY}:/data -v ${PWD}/${OUTPUT}:/output -v ${PWD}/${TABLE_DIR}:/table --network linker-dev \
