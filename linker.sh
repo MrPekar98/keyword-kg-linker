@@ -58,7 +58,7 @@ then
   elif [[ $1 == "-output" ]]
   then
     OUTPUT=$2
-  elif [[ $1 == 'dir' ]]
+  elif [[ $1 == '-dir' ]]
   then
     DIRECTORY=$2
   elif [[ $1 == "-candidates" ]]

@@ -2,17 +2,12 @@ package dk.aau.dkwe;
 
 import dk.aau.dkwe.candidate.IndexBuilder;
 import dk.aau.dkwe.connector.Neo4J;
-import dk.aau.dkwe.disambiguation.LevenshteinRanker;
-import dk.aau.dkwe.disambiguation.Ranker;
-import dk.aau.dkwe.disambiguation.Result;
-import org.apache.commons.lang3.tuple.Pair;
-import org.apache.commons.text.similarity.LevenshteinDistance;
+import dk.aau.dkwe.linking.CSVEntityLinker;
 
 import java.io.File;
 import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.List;
 import java.util.Set;
 
 public class Main
@@ -108,30 +103,35 @@ public class Main
         Instant start = Instant.now();
         System.out.println("Linking...");
 
-        File resultDir = null, tableDir = null, indexDir = null;
+        File resultDir = null, tableFile = null, indexDir = null;
         int candidates = -1;
 
         for (ArgParser.Parameter param : parameters)
         {
             switch (param)
             {
-                case TABLE -> tableDir = new File(param.getValue());
+                case TABLE -> tableFile = new File(param.getValue());
                 case DIRECTORY -> indexDir = new File(param.getValue());
                 case OUTPUT -> resultDir = new File(param.getValue());
                 case CANDIDATES -> candidates = Integer.parseInt(param.getValue());
             }
         }
 
-        List<String> corpus = List.of("Testing", "Many Tests", "Tests");
-        List<Result<String>> results = LevenshteinRanker.levenshteinRank().rank("Test", corpus);
-        int rank = 1;
-
-        for (Result<String> res : results)
+        try
         {
-            System.out.println(rank++ + ": " + res);
+            CSVEntityLinker linker = new CSVEntityLinker(candidates, indexDir);
+            linker.linkTable(tableFile, resultDir);
         }
 
-        Duration duration = Duration.between(start, Instant.now());
-        System.out.println("Linking done in " + duration.toString().substring(2));
+        catch (IOException e)
+        {
+            System.err.println("IOException: " + e.getMessage());
+        }
+
+        finally
+        {
+            Duration duration = Duration.between(start, Instant.now());
+            System.out.println("Linking done in " + duration.toString().substring(2));
+        }
     }
 }

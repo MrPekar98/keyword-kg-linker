@@ -7,9 +7,11 @@ import org.apache.lucene.search.*;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
-public class LuceneIndex implements Index<String, List<String>>
+public class LuceneIndex implements Index<String, Set<String>>
 {
     static final String URI_FIELD = "URI";
     static final String TEXT_FIELD = "text";
@@ -24,13 +26,13 @@ public class LuceneIndex implements Index<String, List<String>>
     }
 
     @Override
-    public List<String> lookup(String key)
+    public Set<String> lookup(String key)
     {
         try
         {
             Query query = this.parser.parse(key);
             ScoreDoc[] hits = this.searcher.search(query, this.resultSize).scoreDocs;
-            List<String> results = new ArrayList<>(hits.length);
+            Set<String> results = new HashSet<>(hits.length);
 
             for (ScoreDoc hit : hits)
             {
