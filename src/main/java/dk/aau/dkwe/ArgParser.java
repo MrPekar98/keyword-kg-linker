@@ -36,7 +36,7 @@ public final class ArgParser
         DIRECTORY("-dir"),
         TABLE("-table"),
         OUTPUT("-output"),
-        PREDICATE("-predicate"),
+        PREDICATE_FILE("-predicate-file"),
         CANDIDATES("-candidates");
 
         Parameter(String parameter)
@@ -68,7 +68,7 @@ public final class ArgParser
             return DIRECTORY.toString().equals(str) ? DIRECTORY :
                     TABLE.toString().equals(str) ? TABLE :
                             OUTPUT.toString().equals(str) ? OUTPUT :
-                                    PREDICATE.toString().equals(str) ? PREDICATE :
+                                    PREDICATE_FILE.toString().equals(str) ? PREDICATE_FILE :
                                             CANDIDATES.toString().equals(str) ? CANDIDATES : null;
         }
     }
@@ -136,7 +136,7 @@ public final class ArgParser
         }
 
         Iterator<Parameter> parameters = this.parameters.iterator();
-        boolean hasDir = false, hasPredicate = false;
+        boolean hasDir = false, hasPredicates = false;
 
         while (parameters.hasNext())
         {
@@ -147,9 +147,9 @@ public final class ArgParser
                 hasDir = true;
             }
 
-            else if (parameter == Parameter.PREDICATE)
+            else if (parameter == Parameter.PREDICATE_FILE)
             {
-                hasPredicate = true;
+                hasPredicates = true;
             }
 
             if (parameter.getValue() == null)
@@ -160,10 +160,10 @@ public final class ArgParser
             }
         }
 
-        if (!(hasDir && hasPredicate))
+        if (!(hasDir && hasPredicates))
         {
             this.parsed = false;
-            this.parseError = "Indexing requires parameters '-dir' and '-predicate'";
+            this.parseError = "Indexing requires parameters '-dir' and '-predicate-file'";
         }
     }
 

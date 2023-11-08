@@ -8,11 +8,12 @@ import org.apache.lucene.store.FSDirectory;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Map;
 import java.util.Set;
 
 public final class IndexBuilder
 {
-    public static LuceneIndex luceneBuilder(Set<Pair<String, String>> entries, File directory) throws IOException
+    public static LuceneIndex luceneBuilder(Map<String, Set<String>> entries, File directory) throws IOException
     {
         return LuceneIndexBuilder.build(entries, directory);
     }

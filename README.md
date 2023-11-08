@@ -23,11 +23,22 @@ The entity linker will not work without a populated Neo4J instance running.
 Now, the entity linker needs to be indexed using the populated Neo4J instance.
 
 ```bash
-./linker.sh -dir <DIRECTORY> -predicate <LABEL_PREDICATE>
+./linker.sh -dir <DIRECTORY> -predicate-file <PREDICATES_FILE>
 ```
 
-You must specify the directory in which to save the index files and the KG predicate to retrieve entity labels in Neo4J.
+You must specify the directory in which to save the index files and the KG predicates in a file to retrieve entity string representations in Neo4J.
 When the script is called the first time, it will build a Docker image before it will run the container to index the entity linker.
+
+The predicate file must be a list separated by newline of Neo4J Neosemantics predicates.
+For example, the RDFS label corresponds to `rdfs__label` in Neosemantics.
+An example of such file is given below:
+
+```
+rdfs__label
+ns1__shortname
+ns1__surname
+ns1__alias
+```
 
 ## Usage
 To link a table, call the `linker.sh` script with two arguments: the path to the table CSV file and the output directory.

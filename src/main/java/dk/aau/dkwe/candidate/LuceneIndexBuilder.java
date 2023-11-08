@@ -1,6 +1,5 @@
 package dk.aau.dkwe.candidate;
 
-import org.apache.commons.lang3.tuple.Pair;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
@@ -13,11 +12,12 @@ import org.apache.lucene.store.FSDirectory;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Map;
 import java.util.Set;
 
 public final class LuceneIndexBuilder
 {
-    public static LuceneIndex build(Set<Pair<String, String>> entries, File directory) throws IOException
+    public static LuceneIndex build(Map<String, Set<String>> entries, File directory) throws IOException
     {
         if (directory.listFiles() != null && directory.listFiles().length > 0)
         {
@@ -35,14 +35,22 @@ public final class LuceneIndexBuilder
         }
     }
 
-    private static void load(Set<Pair<String, String>> entries, IndexWriter writer)
+    private static void load(Map<String, Set<String>> entries, IndexWriter writer)
     {
-        entries.forEach(pair -> {
+
+        entries.forEach((key, value) -> {
             try
             {
+                StringBuilder text = new StringBuilder();
                 Document doc = new Document();
-                doc.add(new Field(LuceneIndex.URI_FIELD, pair.getKey(), TextField.TYPE_STORED));
-                doc.add(new Field(LuceneIndex.TEXT_FIELD, pair.getValue(), TextField.TYPE_STORED));
+                doc.add(new Field(LuceneIndex.URI_FIELD, key, TextField.TYPE_STORED));
+
+                for (String predicateValue : value)
+                {
+                    text.append(' ').append(predicateValue);
+                }
+
+                doc.add(new Field(LuceneIndex.TEXT_FIELD, text.toString(), TextField.TYPE_STORED));
                 writer.addDocument(doc);
             }
 

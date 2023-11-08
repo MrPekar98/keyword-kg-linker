@@ -41,22 +41,68 @@ public final class Neo4J implements AutoCloseable
         }
     }
 
-    public Set<Pair<String, String>> labels(String neo4jPredicate)
+    public Set<String> entityString(String entity, Set<String> neo4jPredicates)
     {
         try (Session session = this.driver.session())
         {
             return session.readTransaction(tx -> {
-                Set<Pair<String, String>> labels = new HashSet<>();
-                Result r = tx.run("MATCH (n:Resource) WHERE EXISTS(n." + neo4jPredicate +
-                        ") RETURN n.uri AS uri, n." + neo4jPredicate + " AS label");
+                Set<String> labels = new HashSet<>();
+                Map<String, Object> params = new HashMap<>();
+                params.put("entity", entity);
+
+                neo4jPredicates.forEach(p -> {
+                    Result r = tx.run("MATCH (n:Resource) WHERE n.uri IN [$entity] AND EXISTS(n." + p +
+                            ") RETURN n." + p + " AS label", params);
+
+                    for (var result : r.list())
+                    {
+                        String label = result.get("label").asString();
+                        labels.add(label);
+                    }
+                });
+
+                return labels;
+            });
+        }
+    }
+
+    public Set<String> entities()
+    {
+        try (Session session = this.driver.session())
+        {
+            return session.readTransaction(tx -> {
+                Set<String> ents = new HashSet<>();
+                Result r = tx.run("MATCH (n:Resource) RETURN n.uri AS uri");
 
                 for (var result : r.list())
                 {
-                    String uri = result.get("uri").asString(), label = result.get("label").asString();
-                    labels.add(Pair.of(uri, label));
+                    String uri = result.get("uri").asString();
+                    ents.add(uri);
                 }
 
-                return labels;
+                return ents;
+            });
+        }
+    }
+
+    public Set<String> neighbors(String entity)
+    {
+        try (Session session = this.driver.session())
+        {
+            return session.readTransaction(tx -> {
+                Set<String> entities = new HashSet<>();
+                Map<String, Object> params = new HashMap<>();
+                params.put("entity", entity);
+
+                Result r = tx.run("MATCH (n1:Resource)->[r]->(n2:Resource) WHERE n1.uri IN [$entity] RETURN n2.uri AS uri", params);
+
+                for (var result : r.list())
+                {
+                    String uri = result.get("uri").asString();
+                    entities.add(uri);
+                }
+
+                return entities;
             });
         }
     }

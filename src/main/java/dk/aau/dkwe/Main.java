@@ -4,10 +4,15 @@ import dk.aau.dkwe.candidate.IndexBuilder;
 import dk.aau.dkwe.connector.Neo4J;
 import dk.aau.dkwe.linking.CSVEntityLinker;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 public class Main
@@ -71,16 +76,14 @@ public class Main
     private static void index(Set<ArgParser.Parameter> parameters) throws Exception
     {
         Instant start = Instant.now();
+        File directory = null, predicateFile = null;
         System.out.println("Indexing...");
-
-        String predicate = null;
-        File directory = null;
 
         for (ArgParser.Parameter param : parameters)
         {
-            if (param == ArgParser.Parameter.PREDICATE)
+            if (param == ArgParser.Parameter.PREDICATE_FILE)
             {
-                predicate = param.getValue();
+                predicateFile = new File(param.getValue());
             }
 
             else
@@ -89,13 +92,51 @@ public class Main
             }
         }
 
+        Set<String> predicates = predicates(predicateFile);
         Neo4J neo4J = new Neo4J();
-        var labels = neo4J.labels(predicate);
-        IndexBuilder.luceneBuilder(labels, directory);
+        Set<String> entities = neo4J.entities();
+        var documents = createDocuments(entities, neo4J, predicates);
+        IndexBuilder.luceneBuilder(documents, directory);
         neo4J.close();
 
         Duration duration = Duration.between(start, Instant.now());
         System.out.println("Indexing done in " + duration.toString().substring(2));
+    }
+
+    private static Set<String> predicates(File predicateFile)
+    {
+        try (BufferedReader reader = new BufferedReader(new FileReader(predicateFile)))
+        {
+            Set<String> predicates = new HashSet<>();
+            String line;
+
+            while ((line = reader.readLine()) != null)
+            {
+                predicates.add(line);
+            }
+
+            return predicates;
+        }
+
+        catch (IOException e)
+        {
+            return new HashSet<>();
+        }
+    }
+
+    private static Map<String, Set<String>> createDocuments(Set<String> entities, Neo4J neo4J, Set<String> predicates)
+    {
+        Map<String, Set<String>> documents = new HashMap<>(entities.size());
+
+        for (String entity : entities)
+        {
+            Set<String> labels = neo4J.entityString(entity, predicates),
+                    neighbors = neo4J.neighbors(entity);
+            documents.put(entity, labels);
+            neighbors.forEach(n -> documents.get(entity).addAll(neo4J.entityString(n, predicates)));
+        }
+
+        return documents;
     }
 
     private static void link(Set<ArgParser.Parameter> parameters)
