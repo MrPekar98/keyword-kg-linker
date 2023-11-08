@@ -94,7 +94,7 @@ public final class Neo4J implements AutoCloseable
                 Map<String, Object> params = new HashMap<>();
                 params.put("entity", entity);
 
-                Result r = tx.run("MATCH (n1:Resource)->[r]->(n2:Resource) WHERE n1.uri IN [$entity] RETURN n2.uri AS uri", params);
+                Result r = tx.run("MATCH (n1:Resource)-[r]->(n2:Resource) WHERE n1.uri IN [$entity] RETURN n2.uri AS uri", params);
 
                 for (var result : r.list())
                 {
