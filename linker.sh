@@ -13,14 +13,14 @@ fi
 if [[ "$#" -eq 4 ]]   # Indexing
 then
   DATA_DIR=""
-  PREDICATE=""
+  PREDICATE_FILE=""
 
   if [[ $1 == "-dir" ]]
   then
     DATA_DIR=$2
-  elif [[ $1 == "-predicate" ]]
+  elif [[ $1 == "-predicate-file" ]]
   then
-    PREDICATE=$2
+    PREDICATE_FILE=$2
   else
     echo "Option '$1' was not recognized"
     exit 1
@@ -29,9 +29,9 @@ then
   if [[ $3 == "-dir" ]]
   then
     DATA_DIR=$4
-  elif [[ $3 == '-predicate' ]]
+  elif [[ $3 == '-predicate-file' ]]
   then
-    PREDICATE=$4
+    PREDICATE_FILE=$4
   else
     echo "Option '$3' was not recognized"
     exit 1
@@ -44,7 +44,7 @@ then
   fi
 
   docker run --rm -v ${PWD}/${DATA_DIR}:/data --network linker-dev ${IMAGE} \
-      java -jar keywork-linker.jar index -dir /data -predicate ${PREDICATE}
+      java -jar keywork-linker.jar index -dir /data -predicate-file ${PREDICATE_FILE}
 elif [[ "$#" -eq 8 ]]   # Linking
 then
   TABLE=""
