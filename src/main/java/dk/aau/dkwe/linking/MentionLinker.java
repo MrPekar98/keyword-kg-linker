@@ -10,11 +10,11 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Set;
 
-public abstract class TableEntityLinker implements EntityLinker<String, String>
+public abstract class MentionLinker implements EntityLinker<String, String>
 {
     private final LuceneIndex lucene;
 
-    protected TableEntityLinker(File indexDirectory, int candidatesSize) throws IOException
+    protected MentionLinker(File indexDirectory, int candidatesSize) throws IOException
     {
         this.lucene = IndexBuilder.luceneBuilder(indexDirectory, candidatesSize);
 

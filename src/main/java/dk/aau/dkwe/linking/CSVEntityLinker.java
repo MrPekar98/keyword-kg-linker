@@ -8,7 +8,7 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CSVEntityLinker extends TableEntityLinker
+public class CSVEntityLinker extends MentionLinker
 {
     public CSVEntityLinker(int candidatesSize, File indexDirectory) throws IOException
     {
