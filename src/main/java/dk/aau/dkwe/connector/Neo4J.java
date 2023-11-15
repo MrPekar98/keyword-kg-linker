@@ -41,6 +41,26 @@ public final class Neo4J implements AutoCloseable
         }
     }
 
+    public String entityLabel(String entity)
+    {
+        try (Session session = this.driver.session())
+        {
+            return session.readTransaction(tx -> {
+                Map<String, Object> params = new HashMap<>();
+                params.put("entity", entity);
+
+                Result r = tx.run("MATCH (n:Resource) WHERE n.uri IN [$entity] RETURN n.rdfs__label AS label", params);
+
+                for (var result : r.list())
+                {
+                    return result.get("label").asString();
+                }
+
+                return null;
+            });
+        }
+    }
+
     public Set<String> entityString(String entity, Set<String> neo4jPredicates)
     {
         try (Session session = this.driver.session())

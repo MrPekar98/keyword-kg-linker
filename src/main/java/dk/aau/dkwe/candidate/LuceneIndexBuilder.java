@@ -17,7 +17,7 @@ import java.util.Set;
 
 public final class LuceneIndexBuilder
 {
-    public static LuceneIndex build(Map<String, Set<String>> entries, File directory) throws IOException
+    public static LuceneIndex build(Set<dk.aau.dkwe.candidate.Document> documents, File directory) throws IOException
     {
         if (directory.listFiles() != null && directory.listFiles().length > 0)
         {
@@ -28,30 +28,30 @@ public final class LuceneIndexBuilder
         {
             IndexWriterConfig config = new IndexWriterConfig(analyzer);
             IndexWriter writer = new IndexWriter(dir, config);
-            load(entries, writer);
+            load(documents, writer);
             writer.close();
 
             return IndexBuilder.luceneBuilder(directory, 50);
         }
     }
 
-    private static void load(Map<String, Set<String>> entries, IndexWriter writer)
+    private static void load(Set<dk.aau.dkwe.candidate.Document> documents, IndexWriter writer)
     {
 
-        entries.forEach((key, value) -> {
+        documents.forEach(doc -> {
             try
             {
-                StringBuilder text = new StringBuilder();
-                Document doc = new Document();
-                doc.add(new Field(LuceneIndex.URI_FIELD, key, TextField.TYPE_STORED));
+                StringBuilder description = new StringBuilder(), subDescription = new StringBuilder();
+                Document luceneDoc = new Document();
+                luceneDoc.add(new Field(LuceneIndex.URI_FIELD, doc.uri(), TextField.TYPE_STORED));
+                luceneDoc.add(new Field(LuceneIndex.LABEL_FIELD, doc.label(), TextField.TYPE_STORED));
 
-                for (String predicateValue : value)
-                {
-                    text.append(' ').append(predicateValue);
-                }
+                doc.description().forEach(desc -> description.append(' ').append(desc));
+                doc.subDescription().forEach(subDesc -> subDescription.append(' ').append(subDesc));
+                luceneDoc.add(new Field(LuceneIndex.DESCRIPTION_FIELD, description.toString(), TextField.TYPE_STORED));
+                luceneDoc.add(new Field(LuceneIndex.SUB_DESCRIPTION_FIELD, subDescription.toString(), TextField.TYPE_STORED));
 
-                doc.add(new Field(LuceneIndex.TEXT_FIELD, text.toString(), TextField.TYPE_STORED));
-                writer.addDocument(doc);
+                writer.addDocument(luceneDoc);
             }
 
             catch (IOException ignored) {}

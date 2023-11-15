@@ -13,9 +13,9 @@ import java.util.Set;
 
 public final class IndexBuilder
 {
-    public static LuceneIndex luceneBuilder(Map<String, Set<String>> entries, File directory) throws IOException
+    public static LuceneIndex luceneBuilder(Set<Document> documents, File directory) throws IOException
     {
-        return LuceneIndexBuilder.build(entries, directory);
+        return LuceneIndexBuilder.build(documents, directory);
     }
 
     public static LuceneIndex luceneBuilder(File directory, int resultSize) throws IOException

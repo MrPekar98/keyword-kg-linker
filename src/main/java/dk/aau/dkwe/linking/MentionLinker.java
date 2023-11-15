@@ -23,7 +23,7 @@ public abstract class MentionLinker implements EntityLinker<String, String>
     @Override
     public String link(String mention)
     {
-        Set<String> candidates = this.lucene.lookup(mention);
+        Set<String> candidates = this.lucene.lookup(mention, LuceneIndex.LABEL_FIELD);
         List<Result<String>> disambiguate = LevenshteinRanker.levenshteinRank().rank(mention, candidates);
         return !disambiguate.isEmpty() ? disambiguate.get(0).element() : null;
     }

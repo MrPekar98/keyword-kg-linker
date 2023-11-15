@@ -1,5 +1,6 @@
 package dk.aau.dkwe;
 
+import dk.aau.dkwe.candidate.Document;
 import dk.aau.dkwe.candidate.IndexBuilder;
 import dk.aau.dkwe.connector.Neo4J;
 import dk.aau.dkwe.linking.CSVEntityLinker;
@@ -95,7 +96,7 @@ public class Main
         Set<String> predicates = predicates(predicateFile);
         Neo4J neo4J = new Neo4J();
         Set<String> entities = neo4J.entities();
-        var documents = createDocuments(entities, neo4J, predicates);
+        Set<Document> documents = createDocuments(entities, neo4J, predicates);
         IndexBuilder.luceneBuilder(documents, directory);
         neo4J.close();
 
@@ -124,16 +125,25 @@ public class Main
         }
     }
 
-    private static Map<String, Set<String>> createDocuments(Set<String> entities, Neo4J neo4J, Set<String> predicates)
+    private static Set<Document> createDocuments(Set<String> entities, Neo4J neo4J, Set<String> predicates)
     {
-        Map<String, Set<String>> documents = new HashMap<>(entities.size());
+        Set<Document> documents = new HashSet<>(entities.size());
 
         for (String entity : entities)
         {
-            Set<String> labels = neo4J.entityString(entity, predicates),
-                    neighbors = neo4J.neighbors(entity);
-            documents.put(entity, labels);
-            neighbors.forEach(n -> documents.get(entity).addAll(neo4J.entityString(n, predicates)));
+            String label = neo4J.entityLabel(entity);
+            Set<String> description = neo4J.entityString(entity, predicates),
+                    neighbors = neo4J.neighbors(entity), neighborDescription = new HashSet<>();
+            predicates.add("rdfs__label");  // Including label for neighbor entities only
+            neighbors.forEach(n -> neighborDescription.addAll(neo4J.entityString(n, predicates)));
+
+            if (label == null)
+            {
+                String[] entitySplit = entity.split("/");
+                label = entitySplit[entitySplit.length - 1].replace('_', ' ');
+            }
+
+            documents.add(new Document(entity, label, description, neighborDescription));
         }
 
         return documents;
