@@ -23,35 +23,31 @@ The entity linker will not work without a populated Neo4J instance running.
 Now, the entity linker needs to be indexed using the populated Neo4J instance.
 
 ```bash
-./linker.sh -dir <DIRECTORY> -predicate-file <PREDICATES_FILE>
+./linker.sh -dir <DIRECTORY> -config <CONFIG_FILE>
 ```
 
-You must specify the directory in which to save the index files and the KG predicates in a file to retrieve entity string representations in Neo4J.
+You must specify the directory in which to save the index files and the configuration file.
+See `config.json` for the content of this configuration file.
+It must specify a set of Neo4J predicates to retrieve entity string representations.
+For example, the RDFS label corresponds to `rdfs__label` in Neosemantics in Neo4J.
+Second, the configuration file contains weights of different entity components.
+`LABEL` is the weight of the entity label, `DESCRIPTION` is the weight of the entity string representations, and `SUB-DESCRIPTION` is the weight of entity descriptions of neighboring entities.
+Last, it must specify number of candidate entities to disambiguate.
+
 When the script is called the first time, it will build a Docker image before it will run the container to index the entity linker.
 
-The predicate file must be a list separated by newline of Neo4J Neosemantics predicates.
-For example, the RDFS label corresponds to `rdfs__label` in Neosemantics.
-An example of such file is given below:
-
-```
-rdfs__label
-ns1__shortname
-ns1__surname
-ns1__alias
-```
-
 ## Usage
-To link a table, call the `linker.sh` script with two arguments: the path to the table CSV file and the output directory.
+To link a table, call the `linker.sh` script with 5 arguments: the path to the table CSV file, the output directory, the index directory, and the configuration file
 
 ```bash
-./linker.sh -table <CSV_FILE> -output <OUTPUT_DIRECTORY> -dir <DIRECTORY> -candidates <CANDIDATE_SET_SIZE>
+./linker.sh -table <CSV_FILE> -output <OUTPUT_DIRECTORY> -dir <DIRECTORY> -config <CONFIG_FILE>
 ```
 
 For example, if a CSV table is in `tables/table.csv`, the results should be put in `results/`, and the index files are in `data/`, call the `linker.sh` script the following way:
 
 ```bash
-./linker.sh -table tables/table.csv -output results/ -dir data/ -candidates 50
+./linker.sh -table tables/table.csv -output results/ -dir data/ -config config.json
 ```
 
 The results with linked entities of entities identified in `tables/table.csv` can now be found in `results/` using the indexes stored in `data/`.
-The accuracy and efficiency can be tuned with the `-candidates` parameter, which determines the size of the set of candidate entities.
+The accuracy and efficiency can be tuned with the weights and the number of candidates specified in the configuration file, which determines the size of the set of candidate entities.

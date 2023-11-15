@@ -1,0 +1,13 @@
+{
+    "predicates": [
+        "ns1__shortname",
+        "ns1__surname",
+        "ns1__alias"
+    ],
+    "weights": {
+        "LABEL": 0.6,
+        "DESCRIPTION": 0.2,
+        "SUB-DESCRIPTION": 0.2
+    },
+    "candidates": 50
+}

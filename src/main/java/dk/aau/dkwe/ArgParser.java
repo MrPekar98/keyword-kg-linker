@@ -36,8 +36,7 @@ public final class ArgParser
         DIRECTORY("-dir"),
         TABLE("-table"),
         OUTPUT("-output"),
-        PREDICATE_FILE("-predicate-file"),
-        CANDIDATES("-candidates");
+        CONFIG("-config");
 
         Parameter(String parameter)
         {
@@ -68,8 +67,7 @@ public final class ArgParser
             return DIRECTORY.toString().equals(str) ? DIRECTORY :
                     TABLE.toString().equals(str) ? TABLE :
                             OUTPUT.toString().equals(str) ? OUTPUT :
-                                    PREDICATE_FILE.toString().equals(str) ? PREDICATE_FILE :
-                                            CANDIDATES.toString().equals(str) ? CANDIDATES : null;
+                                    CONFIG.toString().equals(str) ? CONFIG : null;
         }
     }
 
@@ -136,7 +134,7 @@ public final class ArgParser
         }
 
         Iterator<Parameter> parameters = this.parameters.iterator();
-        boolean hasDir = false, hasPredicates = false;
+        boolean hasDir = false, hasConfig = false;
 
         while (parameters.hasNext())
         {
@@ -147,9 +145,9 @@ public final class ArgParser
                 hasDir = true;
             }
 
-            else if (parameter == Parameter.PREDICATE_FILE)
+            else if (parameter == Parameter.CONFIG)
             {
-                hasPredicates = true;
+                hasConfig = true;
             }
 
             if (parameter.getValue() == null)
@@ -160,10 +158,10 @@ public final class ArgParser
             }
         }
 
-        if (!(hasDir && hasPredicates))
+        if (!(hasDir && hasConfig))
         {
             this.parsed = false;
-            this.parseError = "Indexing requires parameters '-dir' and '-predicate-file'";
+            this.parseError = "Indexing requires parameters '-dir' and '-config'";
         }
     }
 
@@ -176,7 +174,7 @@ public final class ArgParser
         }
 
         Iterator<Parameter> params = this.parameters.iterator();
-        boolean hasDir = false, hasOutput = false, hasTable = false, hasCandidates = false;
+        boolean hasDir = false, hasOutput = false, hasTable = false, hasConfig = false;
 
         while (params.hasNext())
         {
@@ -187,7 +185,7 @@ public final class ArgParser
                 case DIRECTORY -> hasDir = true;
                 case TABLE -> hasTable = true;
                 case OUTPUT -> hasOutput = true;
-                case CANDIDATES -> hasCandidates = true;
+                case CONFIG -> hasConfig = true;
             }
 
             if (p.getValue() == null)
@@ -198,10 +196,10 @@ public final class ArgParser
             }
         }
 
-        if (!(hasDir && hasOutput && hasTable && hasCandidates))
+        if (!(hasDir && hasOutput && hasTable && hasConfig))
         {
             this.parsed = false;
-            this.parseError = "Linking requires parameters '-dir', '-table', and '-output'";
+            this.parseError = "Linking requires parameters '-dir', '-table', '-output', and 'config'";
         }
     }
 

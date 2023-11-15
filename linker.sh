@@ -18,7 +18,7 @@ then
   if [[ $1 == "-dir" ]]
   then
     DATA_DIR=$2
-  elif [[ $1 == "-predicate-file" ]]
+  elif [[ $1 == "-config" ]]
   then
     PREDICATE_FILE=$2
   else
@@ -29,7 +29,7 @@ then
   if [[ $3 == "-dir" ]]
   then
     DATA_DIR=$4
-  elif [[ $3 == '-predicate-file' ]]
+  elif [[ $3 == '-config' ]]
   then
     PREDICATE_FILE=$4
   else
@@ -50,7 +50,7 @@ then
   TABLE=""
   OUTPUT=""
   DIRECTORY=""
-  CANDIDATES=""
+  CONFIG=""
 
   if [[ $1 == "-table" ]]
   then
@@ -61,9 +61,9 @@ then
   elif [[ $1 == '-dir' ]]
   then
     DIRECTORY=$2
-  elif [[ $1 == "-candidates" ]]
+  elif [[ $1 == "-config" ]]
   then
-    CANDIDATES=$2
+    CONFIG=$2
   else
     echo "Option '$1' was not recognized"
     exit 1
@@ -78,9 +78,9 @@ then
   elif [[ $3 == "-dir" ]]
   then
     DIRECTORY=$4
-  elif [[ $3 == "-candidates" ]]
+  elif [[ $3 == "-config" ]]
   then
-    CANDIDATES=$4
+    CONFIG=$4
   else
     echo "Option '$3' was not recognized"
     exit 1
@@ -95,9 +95,9 @@ then
   elif [[ $5 == "-dir" ]]
   then
     DIRECTORY=$6
-  elif [[ $5 == "-candidates" ]]
+  elif [[ $5 == "-config" ]]
   then
-    CANDIDATES=$6
+    CONFIG=$6
   else
     echo "Option '$5' was not recognized"
   fi
@@ -111,9 +111,9 @@ then
     elif [[ $7 == "-dir" ]]
     then
       DIRECTORY=$8
-    elif [[ $7 == "-candidates" ]]
+    elif [[ $7 == "-config" ]]
     then
-      CANDIDATES=$8
+      CONFIG=$8
     else
       echo "Option '$7' was not recognized"
     fi
@@ -128,7 +128,7 @@ then
   TABLE_FILENAME=$(basename ${TABLE})
   TABLE_DIR=$(dirname $TABLE)
   docker run --rm -v ${PWD}/${DIRECTORY}:/data -v ${PWD}/${OUTPUT}:/output -v ${PWD}/${TABLE_DIR}:/table --network linker-dev \
-      ${IMAGE} java -jar keywork-linker.jar link -table /table/${TABLE_FILENAME} -output /output -dir /data -candidates ${CANDIDATES}
+      ${IMAGE} java -jar keywork-linker.jar link -table /table/${TABLE_FILENAME} -output /output -dir /data -config ${CONFIG}
 else
   echo "Did not understand parameters"
 fi

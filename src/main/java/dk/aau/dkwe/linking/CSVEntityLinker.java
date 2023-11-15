@@ -7,12 +7,13 @@ import org.apache.commons.lang3.StringUtils;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class CSVEntityLinker extends MentionLinker
 {
-    public CSVEntityLinker(int candidatesSize, File indexDirectory) throws IOException
+    public CSVEntityLinker(int candidatesSize, File indexDirectory, Map<String, Double> weights) throws IOException
     {
-        super(indexDirectory, candidatesSize);
+        super(indexDirectory, weights, candidatesSize);
     }
 
     public void linkTable(File tableFile, File outputDirectory) throws IOException

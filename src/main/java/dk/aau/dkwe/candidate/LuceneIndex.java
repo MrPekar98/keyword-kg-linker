@@ -8,11 +8,11 @@ import org.apache.lucene.search.*;
 import java.io.IOException;
 import java.util.*;
 
-public class LuceneIndex implements Index<String, Set<String>>
+public class LuceneIndex implements Index<String, Map<String, Double>>
 {
     public static final String URI_FIELD = "URI";
     public static final String LABEL_FIELD = "LABEL";
-    public static final String DESCRIPTION_FIELD = "DESCIPTION";
+    public static final String DESCRIPTION_FIELD = "DESCRIPTION";
     public static final String SUB_DESCRIPTION_FIELD = "SUB-DESCRIPTION";
     private final IndexSearcher searcher;
     private final Map<String, QueryParser> parsers = new HashMap<>();
@@ -29,7 +29,7 @@ public class LuceneIndex implements Index<String, Set<String>>
     }
 
     @Override
-    public Set<String> lookup(String key, String field)
+    public Map<String, Double> lookup(String key, String field)
     {
         try
         {
@@ -40,11 +40,13 @@ public class LuceneIndex implements Index<String, Set<String>>
 
             Query query = this.parsers.get(field).parse(key);
             ScoreDoc[] hits = this.searcher.search(query, this.resultSize).scoreDocs;
-            Set<String> results = new HashSet<>(hits.length);
+            Map<String, Double> results = new HashMap<>(hits.length);
 
             for (ScoreDoc hit : hits)
             {
-                results.add(this.searcher.doc(hit.doc).get(URI_FIELD));
+                String uri = this.searcher.doc(hit.doc).get(URI_FIELD);
+                double score = hit.score;
+                results.put(uri, score);
             }
 
             return results;

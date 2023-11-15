@@ -1,19 +1,16 @@
 package dk.aau.dkwe;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import dk.aau.dkwe.candidate.Document;
 import dk.aau.dkwe.candidate.IndexBuilder;
 import dk.aau.dkwe.connector.Neo4J;
 import dk.aau.dkwe.linking.CSVEntityLinker;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 
 public class Main
@@ -74,26 +71,21 @@ public class Main
         }
     }
 
-    private static void index(Set<ArgParser.Parameter> parameters) throws Exception
-    {
+    private static void index(Set<ArgParser.Parameter> parameters) throws Exception {
         Instant start = Instant.now();
-        File directory = null, predicateFile = null;
+        File directory = null, configFile = null;
         System.out.println("Indexing...");
 
-        for (ArgParser.Parameter param : parameters)
-        {
-            if (param == ArgParser.Parameter.PREDICATE_FILE)
-            {
-                predicateFile = new File(param.getValue());
-            }
-
-            else
-            {
+        for (ArgParser.Parameter param : parameters) {
+            if (param == ArgParser.Parameter.CONFIG) {
+                configFile = new File(param.getValue());
+            } else {
                 directory = new File(param.getValue());
             }
         }
 
-        Set<String> predicates = predicates(predicateFile);
+        Config config = readConfigFile(configFile);
+        Set<String> predicates = config.predicates();
         Neo4J neo4J = new Neo4J();
         Set<String> entities = neo4J.entities();
         Set<Document> documents = createDocuments(entities, neo4J, predicates);
@@ -102,27 +94,6 @@ public class Main
 
         Duration duration = Duration.between(start, Instant.now());
         System.out.println("Indexing done in " + duration.toString().substring(2));
-    }
-
-    private static Set<String> predicates(File predicateFile)
-    {
-        try (BufferedReader reader = new BufferedReader(new FileReader(predicateFile)))
-        {
-            Set<String> predicates = new HashSet<>();
-            String line;
-
-            while ((line = reader.readLine()) != null)
-            {
-                predicates.add(line);
-            }
-
-            return predicates;
-        }
-
-        catch (IOException e)
-        {
-            return new HashSet<>();
-        }
     }
 
     private static Set<Document> createDocuments(Set<String> entities, Neo4J neo4J, Set<String> predicates)
@@ -154,8 +125,7 @@ public class Main
         Instant start = Instant.now();
         System.out.println("Linking...");
 
-        File resultDir = null, tableFile = null, indexDir = null;
-        int candidates = -1;
+        File resultDir = null, tableFile = null, indexDir = null, configFile = null;
 
         for (ArgParser.Parameter param : parameters)
         {
@@ -164,13 +134,14 @@ public class Main
                 case TABLE -> tableFile = new File(param.getValue());
                 case DIRECTORY -> indexDir = new File(param.getValue());
                 case OUTPUT -> resultDir = new File(param.getValue());
-                case CANDIDATES -> candidates = Integer.parseInt(param.getValue());
+                case CONFIG -> configFile = new File(param.getValue());
             }
         }
 
         try
         {
-            CSVEntityLinker linker = new CSVEntityLinker(candidates, indexDir);
+            Config config = readConfigFile(configFile);
+            CSVEntityLinker linker = new CSVEntityLinker(config.candidates(), indexDir, config.weights());
             linker.linkTable(tableFile, resultDir);
         }
 
@@ -184,5 +155,12 @@ public class Main
             Duration duration = Duration.between(start, Instant.now());
             System.out.println("Linking done in " + duration.toString().substring(2));
         }
+    }
+
+    private static Config readConfigFile(File configFile) throws FileNotFoundException
+    {
+        Gson gson = new Gson();
+        TypeToken<Config> type = new TypeToken<>(){};
+        return gson.fromJson(new FileReader(configFile), type);
     }
 }
