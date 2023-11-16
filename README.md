@@ -37,16 +37,19 @@ Last, it must specify number of candidate entities to disambiguate.
 When the script is called the first time, it will build a Docker image before it will run the container to index the entity linker.
 
 ## Usage
-To link a table, call the `linker.sh` script with 5 arguments: the path to the table CSV file, the output directory, the index directory, and the configuration file
+To link a table, call the `linker.sh` script with 5 arguments: the path to the table CSV file, the output directory, the index directory, the configuration file, and the type of entity linking.
 
 ```bash
-./linker.sh -table <CSV_FILE> -output <OUTPUT_DIRECTORY> -dir <DIRECTORY> -config <CONFIG_FILE>
+./linker.sh -table <CSV_FILE> -output <OUTPUT_DIRECTORY> -dir <DIRECTORY> -config <CONFIG_FILE> -type <ENTITY_LINKING_TYPE>
 ```
 
-For example, if a CSV table is in `tables/table.csv`, the results should be put in `results/`, and the index files are in `data/`, call the `linker.sh` script the following way:
+There are two types of entity linking: keyword-based (`keyword`) and embedding-based (`embedding`).
+For the embedding-based, it used uncased BERT embeddings.
+
+For example, if a CSV table is in `tables/table.csv`, the results should be put in `results/`, and the index files are in `data/`, call the `linker.sh` script the following way to use keyword-based entity linking:
 
 ```bash
-./linker.sh -table tables/table.csv -output results/ -dir data/ -config config.json
+./linker.sh -table tables/table.csv -output results/ -dir data/ -config config.json -type keyword
 ```
 
 The results with linked entities of entities identified in `tables/table.csv` can now be found in `results/` using the indexes stored in `data/`.

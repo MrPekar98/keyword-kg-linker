@@ -36,7 +36,8 @@ public final class ArgParser
         DIRECTORY("-dir"),
         TABLE("-table"),
         OUTPUT("-output"),
-        CONFIG("-config");
+        CONFIG("-config"),
+        TYPE("-type");
 
         Parameter(String parameter)
         {
@@ -67,7 +68,8 @@ public final class ArgParser
             return DIRECTORY.toString().equals(str) ? DIRECTORY :
                     TABLE.toString().equals(str) ? TABLE :
                             OUTPUT.toString().equals(str) ? OUTPUT :
-                                    CONFIG.toString().equals(str) ? CONFIG : null;
+                                    CONFIG.toString().equals(str) ? CONFIG :
+                                            TYPE.toString().equals(str) ? TYPE : null;
         }
     }
 
@@ -174,7 +176,7 @@ public final class ArgParser
         }
 
         Iterator<Parameter> params = this.parameters.iterator();
-        boolean hasDir = false, hasOutput = false, hasTable = false, hasConfig = false;
+        boolean hasDir = false, hasOutput = false, hasTable = false, hasConfig = false, hasType = false;
 
         while (params.hasNext())
         {
@@ -186,6 +188,7 @@ public final class ArgParser
                 case TABLE -> hasTable = true;
                 case OUTPUT -> hasOutput = true;
                 case CONFIG -> hasConfig = true;
+                case TYPE -> hasType = true;
             }
 
             if (p.getValue() == null)
@@ -196,10 +199,10 @@ public final class ArgParser
             }
         }
 
-        if (!(hasDir && hasOutput && hasTable && hasConfig))
+        if (!(hasDir && hasOutput && hasTable && hasConfig && hasType))
         {
             this.parsed = false;
-            this.parseError = "Linking requires parameters '-dir', '-table', '-output', and 'config'";
+            this.parseError = "Linking requires parameters '-dir', '-table', '-output', '-config', and '-type'";
         }
     }
 

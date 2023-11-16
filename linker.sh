@@ -51,6 +51,7 @@ then
   OUTPUT=""
   DIRECTORY=""
   CONFIG=""
+  TYPE=""
 
   if [[ $1 == "-table" ]]
   then
@@ -64,6 +65,9 @@ then
   elif [[ $1 == "-config" ]]
   then
     CONFIG=$2
+  elif [[ $1 == "-type" ]]
+  then
+    TYPE=$2
   else
     echo "Option '$1' was not recognized"
     exit 1
@@ -81,6 +85,9 @@ then
   elif [[ $3 == "-config" ]]
   then
     CONFIG=$4
+  elif [[ $3 == "-type" ]]
+    then
+      TYPE=$4
   else
     echo "Option '$3' was not recognized"
     exit 1
@@ -98,6 +105,9 @@ then
   elif [[ $5 == "-config" ]]
   then
     CONFIG=$6
+  elif [[ $5 == "-type" ]]
+    then
+      TYPE=$6
   else
     echo "Option '$5' was not recognized"
   fi
@@ -114,9 +124,31 @@ then
     elif [[ $7 == "-config" ]]
     then
       CONFIG=$8
+    elif [[ $7 == "-type" ]]
+      then
+        TYPE=$8
     else
       echo "Option '$7' was not recognized"
     fi
+
+  if [[ $9 == "-table" ]]
+      then
+        TABLE=${10}
+      elif [[ $9 == "-output" ]]
+      then
+        OUTPUT=${10}
+      elif [[ $9 == "-dir" ]]
+      then
+        DIRECTORY=${10}
+      elif [[ $9 == "-config" ]]
+      then
+        CONFIG=${10}
+      elif [[ $9 == "-type" ]]
+        then
+          TYPE=${10}
+      else
+        echo "Option '$9' was not recognized"
+      fi
 
   if [[ ! -f ${TABLE} ]]
   then
@@ -128,7 +160,7 @@ then
   TABLE_FILENAME=$(basename ${TABLE})
   TABLE_DIR=$(dirname $TABLE)
   docker run --rm -v ${PWD}/${DIRECTORY}:/data -v ${PWD}/${OUTPUT}:/output -v ${PWD}/${TABLE_DIR}:/table --network linker-dev \
-      ${IMAGE} java -jar keywork-linker.jar link -table /table/${TABLE_FILENAME} -output /output -dir /data -config ${CONFIG}
+      ${IMAGE} java -jar keywork-linker.jar link -table /table/${TABLE_FILENAME} -output /output -dir /data -config ${CONFIG} -type ${TYPE}
 else
   echo "Did not understand parameters"
 fi

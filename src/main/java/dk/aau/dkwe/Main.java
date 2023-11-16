@@ -6,6 +6,9 @@ import dk.aau.dkwe.candidate.Document;
 import dk.aau.dkwe.candidate.IndexBuilder;
 import dk.aau.dkwe.connector.Neo4J;
 import dk.aau.dkwe.linking.CSVEntityLinker;
+import dk.aau.dkwe.linking.EmbeddingLinker;
+import dk.aau.dkwe.linking.KeywordLinker;
+import dk.aau.dkwe.linking.MentionLinker;
 
 import java.io.*;
 import java.time.Duration;
@@ -119,7 +122,7 @@ public class Main
 
             if (progress++ % 100 == 0)
             {
-                System.out.print("\t\t\t\t\r");
+                System.out.print("\t\t\t\t\t\t\t\t\r");
                 System.out.print("Progress: " + (((double) progress / entityCount) * 100) + "%\r");
             }
         }
@@ -129,10 +132,12 @@ public class Main
 
     private static void link(Set<ArgParser.Parameter> parameters)
     {
-        Instant start = Instant.now();
+        Neo4J neo4J = new Neo4J();
+        Set<String> entities = neo4J.entities();
         System.out.println("Linking...");
 
         File resultDir = null, tableFile = null, indexDir = null, configFile = null;
+        String linkerType = null;
 
         for (ArgParser.Parameter param : parameters)
         {
@@ -142,25 +147,31 @@ public class Main
                 case DIRECTORY -> indexDir = new File(param.getValue());
                 case OUTPUT -> resultDir = new File(param.getValue());
                 case CONFIG -> configFile = new File(param.getValue());
+                case TYPE -> linkerType = param.getValue();
             }
         }
 
         try
         {
             Config config = readConfigFile(configFile);
-            CSVEntityLinker linker = new CSVEntityLinker(config.candidates(), indexDir, config.weights());
-            linker.linkTable(tableFile, resultDir);
-        }
+            MentionLinker linker = switch (linkerType) {
+                case "keyword" -> new KeywordLinker(indexDir, config.weights(), config.candidates());
+                case "embedding" -> new EmbeddingLinker(entities);
+                default -> throw new IllegalArgumentException("Argument for '" + linkerType + "' was not recognized");
+            };
+            CSVEntityLinker csvLinker = new CSVEntityLinker(linker);
+            Instant start = Instant.now();
+            csvLinker.linkTable(tableFile, resultDir);
+            neo4J.close();
+            linker.close();
 
-        catch (IOException e)
-        {
-            System.err.println("IOException: " + e.getMessage());
-        }
-
-        finally
-        {
             Duration duration = Duration.between(start, Instant.now());
             System.out.println("Linking done in " + duration.toString().substring(2));
+        }
+
+        catch (Exception e)
+        {
+            System.err.println("Exception: " + e.getMessage());
         }
     }
 
