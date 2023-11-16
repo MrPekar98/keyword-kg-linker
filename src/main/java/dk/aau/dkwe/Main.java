@@ -99,6 +99,7 @@ public class Main
     private static Set<Document> createDocuments(Set<String> entities, Neo4J neo4J, Set<String> predicates)
     {
         Set<Document> documents = new HashSet<>(entities.size());
+        int progress = 0, entityCount = entities.size();
 
         for (String entity : entities)
         {
@@ -115,6 +116,7 @@ public class Main
             }
 
             documents.add(new Document(entity, label, description, neighborDescription));
+            System.out.println("\t\t\t\t\rProgress: " + ((++progress / entityCount) * 100) + "%");
         }
 
         return documents;
