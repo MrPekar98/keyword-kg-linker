@@ -116,7 +116,8 @@ public class Main
             }
 
             documents.add(new Document(entity, label, description, neighborDescription));
-            System.out.println("\t\t\t\t\rProgress: " + (((double) ++progress / entityCount) * 100) + "%\r");
+            System.out.print("\t\t\t\t\r");
+            System.out.print("Progress: " + (((double) ++progress / entityCount) * 100) + "%\r");
         }
 
         return documents;
