@@ -9,15 +9,19 @@ import java.util.Set;
 public class EmbeddingLinker extends MentionLinker
 {
     private final Set<String> entities;
-    private final Bert bert;
+    private static final Bert BERT;
     private boolean isClosed = false;
-    private Cache<String, String> cache;
+    private final Cache<String, String> cache;
     private static final String MODEL_PATH = "com/robrua/nlp/easy-bert/bert-uncased-L-12-H-768-A-12";
+
+    static
+    {
+        BERT = Bert.load(MODEL_PATH);
+    }
 
     public EmbeddingLinker(Set<String> entities)
     {
         this.entities = entities;
-        this.bert = Bert.load(MODEL_PATH);
         this.cache = CacheBuilder.newBuilder()
                 .maximumSize(10000)
                 .build();
@@ -38,7 +42,7 @@ public class EmbeddingLinker extends MentionLinker
             return cachedLink;
         }
 
-        float[] mentionEmbedding = this.bert.embedSequence(mention);
+        float[] mentionEmbedding = BERT.embedSequence(mention);
         double highestScore = -1.0;
         String bestEntity = null;
 
@@ -46,7 +50,7 @@ public class EmbeddingLinker extends MentionLinker
         {
             String[] split = entity.split("/");
             String entityText = split[split.length - 1].replace('_', ' ');
-            float[] entityEmbedding = this.bert.embedSequence(entityText);
+            float[] entityEmbedding = BERT.embedSequence(entityText);
             double score = cosine(mentionEmbedding, entityEmbedding);
 
             if (score > highestScore)
@@ -88,7 +92,7 @@ public class EmbeddingLinker extends MentionLinker
     @Override
     public void close() throws Exception
     {
-        this.bert.close();
+        BERT.close();
         this.isClosed = true;
     }
 }
