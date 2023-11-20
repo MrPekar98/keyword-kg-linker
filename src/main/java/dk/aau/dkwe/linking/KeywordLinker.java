@@ -17,7 +17,7 @@ public class KeywordLinker extends MentionLinker
     public KeywordLinker(File indexDirectory, Map<String, Double> fieldWeights, int candidatesSize) throws IOException
     {
         this.lucene = IndexBuilder.luceneBuilder(indexDirectory, candidatesSize);
-        this.weights = weights;
+        this.weights = fieldWeights;
 
         if (!this.weights.containsKey(LuceneIndex.LABEL_FIELD) ||
                 !this.weights.containsKey(LuceneIndex.DESCRIPTION_FIELD) ||

@@ -45,7 +45,7 @@ then
 
   docker run --rm -v ${PWD}/${DATA_DIR}:/data --network linker-dev ${IMAGE} \
       java -jar keywork-linker.jar index -dir /data -config ${CONFIG}
-elif [[ "$#" -eq 8 ]]   # Linking
+elif [[ "$#" -eq 10 ]]   # Linking
 then
   TABLE=""
   OUTPUT=""

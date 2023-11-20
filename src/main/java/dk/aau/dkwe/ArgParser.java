@@ -169,10 +169,10 @@ public final class ArgParser
 
     private void checkLinking()
     {
-        if (this.parameters.size() != 4)
+        if (this.parameters.size() != 5)
         {
             this.parsed = false;
-            this.parseError = "Expects three parameters when linking";
+            this.parseError = "Expects five parameters when linking";
         }
 
         Iterator<Parameter> params = this.parameters.iterator();

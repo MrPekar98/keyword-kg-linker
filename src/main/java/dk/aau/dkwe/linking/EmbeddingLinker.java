@@ -1,5 +1,7 @@
 package dk.aau.dkwe.linking;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import com.robrua.nlp.bert.Bert;
 
 import java.util.Set;
@@ -9,12 +11,16 @@ public class EmbeddingLinker extends MentionLinker
     private final Set<String> entities;
     private final Bert bert;
     private boolean isClosed = false;
+    private Cache<String, String> cache;
     private static final String MODEL_PATH = "com/robrua/nlp/easy-bert/bert-uncased-L-12-H-768-A-12";
 
     public EmbeddingLinker(Set<String> entities)
     {
         this.entities = entities;
         this.bert = Bert.load(MODEL_PATH);
+        this.cache = CacheBuilder.newBuilder()
+                .maximumSize(10000)
+                .build();
     }
 
     @Override
@@ -23,6 +29,13 @@ public class EmbeddingLinker extends MentionLinker
         if (this.isClosed)
         {
             throw new IllegalStateException("Class has been closed");
+        }
+
+        String cachedLink = this.cache.getIfPresent(mention);
+
+        if (cachedLink != null)
+        {
+            return cachedLink;
         }
 
         float[] mentionEmbedding = this.bert.embedSequence(mention);
@@ -41,6 +54,11 @@ public class EmbeddingLinker extends MentionLinker
                 highestScore = score;
                 bestEntity = entity;
             }
+        }
+
+        if (bestEntity != null)
+        {
+            this.cache.put(mention, bestEntity);
         }
 
         return bestEntity;
