@@ -2,18 +2,16 @@ package dk.aau.dkwe;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import dk.aau.dkwe.candidate.Document;
-import dk.aau.dkwe.candidate.IndexBuilder;
 import dk.aau.dkwe.connector.Neo4J;
 import dk.aau.dkwe.linking.CSVEntityLinker;
 import dk.aau.dkwe.linking.EmbeddingLinker;
 import dk.aau.dkwe.linking.KeywordLinker;
 import dk.aau.dkwe.linking.MentionLinker;
+import dk.aau.dkwe.load.LuceneIndexer;
 
 import java.io.*;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.HashSet;
 import java.util.Set;
 
 public class Main
@@ -79,55 +77,30 @@ public class Main
         File directory = null, configFile = null;
         System.out.println("Indexing...");
 
-        for (ArgParser.Parameter param : parameters) {
-            if (param == ArgParser.Parameter.CONFIG) {
+        for (ArgParser.Parameter param : parameters)
+        {
+            if (param == ArgParser.Parameter.CONFIG)
+            {
                 configFile = new File(param.getValue());
-            } else {
+            }
+
+            else
+            {
                 directory = new File(param.getValue());
             }
         }
 
         Config config = readConfigFile(configFile);
-        Set<String> predicates = config.predicates();
-        Neo4J neo4J = new Neo4J();
-        Set<String> entities = neo4J.entities();
-        Set<Document> documents = createDocuments(entities, neo4J, predicates);
-        IndexBuilder.luceneBuilder(documents, directory);
-        neo4J.close();
+        LuceneIndexer luceneIndexer = LuceneIndexer.create(config, directory, true);
+
+        if (!luceneIndexer.constructIndex())
+        {
+            System.err.println("Failed constructing indexes");
+            return;
+        }
 
         Duration duration = Duration.between(start, Instant.now());
         System.out.println("Indexing done in " + duration.toString().substring(2));
-    }
-
-    private static Set<Document> createDocuments(Set<String> entities, Neo4J neo4J, Set<String> predicates)
-    {
-        Set<Document> documents = new HashSet<>(entities.size());
-        int progress = 0, entityCount = entities.size();
-
-        for (String entity : entities)
-        {
-            String label = neo4J.entityLabel(entity);
-            Set<String> description = neo4J.entityString(entity, predicates),
-                    neighbors = neo4J.neighbors(entity), neighborDescription = new HashSet<>();
-            predicates.add("rdfs__label");  // Including label for neighbor entities only
-            neighbors.forEach(n -> neighborDescription.addAll(neo4J.entityString(n, predicates)));
-
-            if (label == null)
-            {
-                String[] entitySplit = entity.split("/");
-                label = entitySplit[entitySplit.length - 1].replace('_', ' ');
-            }
-
-            documents.add(new Document(entity, label, description, neighborDescription));
-
-            if (progress++ % 100 == 0)
-            {
-                System.out.print("\t\t\t\t\t\t\t\t\r");
-                System.out.print("Progress: " + (((double) progress / entityCount) * 100) + "%\r");
-            }
-        }
-
-        return documents;
     }
 
     private static void link(Set<ArgParser.Parameter> parameters)

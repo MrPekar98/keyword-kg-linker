@@ -3,6 +3,7 @@ package dk.aau.dkwe.linking;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.robrua.nlp.bert.Bert;
+import dk.aau.dkwe.utils.MathUtils;
 
 import java.util.Set;
 
@@ -51,7 +52,7 @@ public class EmbeddingLinker extends MentionLinker
             String[] split = entity.split("/");
             String entityText = split[split.length - 1].replace('_', ' ');
             float[] entityEmbedding = BERT.embedSequence(entityText);
-            double score = cosine(mentionEmbedding, entityEmbedding);
+            double score = MathUtils.cosine(mentionEmbedding, entityEmbedding);
 
             if (score > highestScore)
             {
@@ -66,27 +67,6 @@ public class EmbeddingLinker extends MentionLinker
         }
 
         return bestEntity;
-    }
-
-    private static double cosine(float[] embedding1, float[] embedding2)
-    {
-        double dotProduct = 0.0;
-        double normA = 0.0;
-        double normB = 0.0;
-
-        for (int i = 0; i < embedding1.length; i++)
-        {
-            dotProduct += embedding1[i] * embedding2[i];
-            normA += Math.pow(embedding1[i], 2);
-            normB += Math.pow(embedding2[i], 2);
-        }
-
-        if (normA == 0 || normB == 0)
-        {
-            return 0.0;
-        }
-
-        return dotProduct / (Math.sqrt(normA) * Math.sqrt(normB));
     }
 
     @Override
