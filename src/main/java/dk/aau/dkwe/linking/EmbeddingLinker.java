@@ -2,27 +2,22 @@ package dk.aau.dkwe.linking;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import com.robrua.nlp.bert.Bert;
+import dk.aau.dkwe.candidate.EmbeddingIndex;
+import dk.aau.dkwe.candidate.IndexBuilder;
 import dk.aau.dkwe.utils.MathUtils;
 
-import java.util.Set;
+import java.io.File;
+import java.util.Iterator;
+import java.util.List;
 
 public class EmbeddingLinker extends MentionLinker
 {
-    private final Set<String> entities;
-    private static final Bert BERT;
-    private boolean isClosed = false;
     private final Cache<String, String> cache;
-    private static final String MODEL_PATH = "com/robrua/nlp/easy-bert/bert-uncased-L-12-H-768-A-12";
+    private final EmbeddingIndex index;
 
-    static
+    public EmbeddingLinker(File indexDir)
     {
-        BERT = Bert.load(MODEL_PATH);
-    }
-
-    public EmbeddingLinker(Set<String> entities)
-    {
-        this.entities = entities;
+        this.index = IndexBuilder.embeddingBuilder(indexDir);
         this.cache = CacheBuilder.newBuilder()
                 .maximumSize(10000)
                 .build();
@@ -31,11 +26,6 @@ public class EmbeddingLinker extends MentionLinker
     @Override
     protected String performLink(String mention)
     {
-        if (this.isClosed)
-        {
-            throw new IllegalStateException("Class has been closed");
-        }
-
         String cachedLink = this.cache.getIfPresent(mention);
 
         if (cachedLink != null)
@@ -43,21 +33,30 @@ public class EmbeddingLinker extends MentionLinker
             return cachedLink;
         }
 
-        float[] mentionEmbedding = BERT.embedSequence(mention);
+        List<Double> mentionEmbedding = this.index.lookup(mention);
+        Iterator<String> entities = this.index.keys();
         double highestScore = -1.0;
         String bestEntity = null;
 
-        for (String entity : this.entities)
+        if (mentionEmbedding == null)
         {
-            String[] split = entity.split("/");
-            String entityText = split[split.length - 1].replace('_', ' ');
-            float[] entityEmbedding = BERT.embedSequence(entityText);
-            double score = MathUtils.cosine(mentionEmbedding, entityEmbedding);
+            return bestEntity;
+        }
 
-            if (score > highestScore)
+        while (entities.hasNext())
+        {
+            String entity = entities.next();
+            List<Double> embedding = this.index.lookup(entity);
+
+            if (embedding != null)
             {
-                highestScore = score;
-                bestEntity = entity;
+                double score = MathUtils.cosine(mentionEmbedding, embedding);
+
+                if (score > highestScore)
+                {
+                    highestScore = score;
+                    bestEntity = entity;
+                }
             }
         }
 
@@ -70,9 +69,5 @@ public class EmbeddingLinker extends MentionLinker
     }
 
     @Override
-    public void close() throws Exception
-    {
-        BERT.close();
-        this.isClosed = true;
-    }
+    public void close() throws Exception {}
 }

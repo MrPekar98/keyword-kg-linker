@@ -7,6 +7,7 @@ import dk.aau.dkwe.linking.CSVEntityLinker;
 import dk.aau.dkwe.linking.EmbeddingLinker;
 import dk.aau.dkwe.linking.KeywordLinker;
 import dk.aau.dkwe.linking.MentionLinker;
+import dk.aau.dkwe.load.EmbeddingIndexer;
 import dk.aau.dkwe.load.LuceneIndexer;
 
 import java.io.*;
@@ -91,13 +92,23 @@ public class Main
         }
 
         Config config = readConfigFile(configFile);
+        Neo4J neo4J = new Neo4J();
+        Set<String> entities = neo4J.entities();
         LuceneIndexer luceneIndexer = LuceneIndexer.create(config, directory, true);
+        EmbeddingIndexer embeddingIndexer = EmbeddingIndexer.create(entities, directory);
+        Thread embeddingIndexingThread = new Thread(embeddingIndexer::constructIndex);
+        embeddingIndexingThread.start();
 
         if (!luceneIndexer.constructIndex())
         {
             System.err.println("Failed constructing indexes");
+            embeddingIndexingThread.interrupt();
+            neo4J.close();
             return;
         }
+
+        embeddingIndexingThread.join();
+        neo4J.close();
 
         Duration duration = Duration.between(start, Instant.now());
         System.out.println("Indexing done in " + duration.toString().substring(2));
@@ -105,12 +116,9 @@ public class Main
 
     private static void link(Set<ArgParser.Parameter> parameters)
     {
-        Neo4J neo4J = new Neo4J();
-        Set<String> entities = neo4J.entities();
-        System.out.println("Linking...");
-
         File resultDir = null, tableFile = null, indexDir = null, configFile = null;
         String linkerType = null;
+        System.out.println("Linking...");
 
         for (ArgParser.Parameter param : parameters)
         {
@@ -129,13 +137,12 @@ public class Main
             Config config = readConfigFile(configFile);
             MentionLinker linker = switch (linkerType) {
                 case "keyword" -> new KeywordLinker(indexDir, config.weights(), config.candidates());
-                case "embedding" -> new EmbeddingLinker(entities);
+                case "embedding" -> new EmbeddingLinker(indexDir);
                 default -> throw new IllegalArgumentException("Argument for '" + linkerType + "' was not recognized");
             };
             CSVEntityLinker csvLinker = new CSVEntityLinker(linker);
             Instant start = Instant.now();
             csvLinker.linkTable(tableFile, resultDir);
-            neo4J.close();
             linker.close();
 
             Duration duration = Duration.between(start, Instant.now());

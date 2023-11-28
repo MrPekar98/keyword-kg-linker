@@ -57,4 +57,28 @@ public class LuceneIndex implements Index<String, Map<String, Double>>
             return null;
         }
     }
+
+    @Override
+    public Map<String, Double> lookup(String key)
+    {
+        throw new IllegalArgumentException("LuceneIndex::lookup: Missing field argument");
+    }
+
+    @Override
+    public boolean add(String key, Map<String, Double> value)
+    {
+        throw new UnsupportedOperationException("LuceneIndex::add is unsupported");
+    }
+
+    @Override
+    public boolean remove(String key)
+    {
+        throw new UnsupportedOperationException("LuceneIndex::remove is unsupported");
+    }
+
+    @Override
+    public int size()
+    {
+        throw new UnsupportedOperationException("LuceneIndex::size us unsupported");
+    }
 }

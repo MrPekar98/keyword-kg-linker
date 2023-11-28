@@ -12,7 +12,6 @@ import org.apache.lucene.store.FSDirectory;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Map;
 import java.util.Set;
 
 public final class LuceneIndexBuilder
@@ -37,7 +36,6 @@ public final class LuceneIndexBuilder
 
     private static void load(Set<dk.aau.dkwe.candidate.Document> documents, IndexWriter writer)
     {
-
         documents.forEach(doc -> {
             try
             {
