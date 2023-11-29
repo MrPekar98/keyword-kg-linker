@@ -87,7 +87,7 @@ public class LuceneIndexer implements Indexer<String, Map<String, Double>>
 
         for (int i = 0; i < iterations; i++)
         {
-            List<String> subset = entityList.subList(i, Math.min(i + splitSize, entityCount));
+            List<String> subset = entityList.subList(i * splitSize, Math.min((i + 1) + splitSize, entityCount));
             Future<Set<Document>> future = threadPool.submit(() -> createDocuments(new HashSet<>(subset), neo4J, predicates));
             tasks.add(future);
         }
