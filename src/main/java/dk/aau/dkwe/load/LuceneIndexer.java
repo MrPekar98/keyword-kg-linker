@@ -82,12 +82,11 @@ public class LuceneIndexer implements Indexer<String, Map<String, Double>>
         List<String> entityList = new ArrayList<>(entities);
         ExecutorService threadPool = Executors.newFixedThreadPool(THREADS);
         List<Future<Set<Document>>> tasks = new ArrayList<>();
-        final int splitSize = 10000;
-        int entityCount = entities.size(), iterations = entityCount / splitSize;
+        final int splitSize = 10000, entityCount = entities.size(), iterations = entityCount / splitSize;
 
-        for (int i = 0; i < iterations; i++)
+        for (int i = 0; i < iterations - 1; i++)
         {
-            List<String> subset = entityList.subList(i * splitSize, Math.min((i + 1) + splitSize, entityCount));
+            List<String> subset = entityList.subList(i * splitSize, Math.min((i + 1) * splitSize, entityCount - 1));
             Future<Set<Document>> future = threadPool.submit(() -> createDocuments(new HashSet<>(subset), neo4J, predicates));
             tasks.add(future);
         }
