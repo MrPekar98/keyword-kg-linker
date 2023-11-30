@@ -23,7 +23,8 @@ public final class IndexBuilder
             folder.mkdirs();
         }
 
-        return LuceneIndexBuilder.build(documents, folder);
+        LuceneIndexBuilder.build(documents, folder);
+        return luceneBuilder(directory, 50);
     }
 
     public static LuceneIndex luceneBuilder(File directory, int resultSize) throws IOException
@@ -43,7 +44,7 @@ public final class IndexBuilder
             folder.mkdirs();
         }
 
-        EmbeddingIndexBuilder.write(directory, index);
+        EmbeddingIndexBuilder.write(folder, index);
         return index;
     }
 

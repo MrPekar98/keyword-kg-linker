@@ -16,7 +16,7 @@ import java.util.Set;
 
 public final class LuceneIndexBuilder
 {
-    public static LuceneIndex build(Set<dk.aau.dkwe.candidate.Document> documents, File directory) throws IOException
+    public static void build(Set<dk.aau.dkwe.candidate.Document> documents, File directory) throws IOException
     {
         if (directory.listFiles() != null && directory.listFiles().length > 0)
         {
@@ -29,8 +29,6 @@ public final class LuceneIndexBuilder
             IndexWriter writer = new IndexWriter(dir, config);
             load(documents, writer);
             writer.close();
-
-            return IndexBuilder.luceneBuilder(directory, 50);
         }
     }
 
