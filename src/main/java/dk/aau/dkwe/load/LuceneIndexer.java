@@ -16,18 +16,20 @@ import java.util.concurrent.Future;
 
 public class LuceneIndexer implements Indexer<String, Map<String, Double>>
 {
+    private final Set<String> entities;
     private final Config config;
     private final File directory;
     private final boolean parallelized;
     private static final int THREADS = 4;
 
-    public static LuceneIndexer create(Config config, File indexDirectory, boolean parallelize)
+    public static LuceneIndexer create(Set<String> entities, Config config, File indexDirectory, boolean parallelize)
     {
-        return new LuceneIndexer(config, indexDirectory, parallelize);
+        return new LuceneIndexer(entities, config, indexDirectory, parallelize);
     }
 
-    private LuceneIndexer(Config config, File indexDirectory, boolean parallelize)
+    private LuceneIndexer(Set<String> entities, Config config, File indexDirectory, boolean parallelize)
     {
+        this.entities = entities;
         this.config = config;
         this.directory = indexDirectory;
         this.parallelized = parallelize;
@@ -53,17 +55,16 @@ public class LuceneIndexer implements Indexer<String, Map<String, Double>>
         try (Neo4J neo4J = new Neo4J())
         {
             Set<String> predicates = config.predicates();
-            Set<String> entities = neo4J.entities();
             Set<Document> documents;
 
             if (this.parallelized)
             {
-                documents = parallelCreateDocuments(entities, neo4J, predicates);
+                documents = parallelCreateDocuments(this.entities, neo4J, predicates);
             }
 
             else
             {
-                documents = createDocuments(entities, neo4J, predicates);
+                documents = createDocuments(this.entities, neo4J, predicates);
             }
 
             IndexBuilder.luceneBuilder(documents, this.directory);
@@ -77,14 +78,14 @@ public class LuceneIndexer implements Indexer<String, Map<String, Double>>
         }
     }
 
-    private Set<Document> parallelCreateDocuments(Set<String> entities, Neo4J neo4J, Set<String> predicates)
+    private static Set<Document> parallelCreateDocuments(Set<String> entities, Neo4J neo4J, Set<String> predicates)
     {
         List<String> entityList = new ArrayList<>(entities);
         ExecutorService threadPool = Executors.newFixedThreadPool(THREADS);
         List<Future<Set<Document>>> tasks = new ArrayList<>();
-        final int splitSize = 10000, entityCount = entities.size(), iterations = entityCount / splitSize;
+        final int splitSize = 10000, entityCount = entities.size(), iterations = (int) Math.ceil((double) entityCount / splitSize);
 
-        for (int i = 0; i < iterations - 1; i++)
+        for (int i = 0; i < iterations; i++)
         {
             List<String> subset = entityList.subList(i * splitSize, Math.min((i + 1) * splitSize, entityCount - 1));
             Future<Set<Document>> future = threadPool.submit(() -> createDocuments(new HashSet<>(subset), neo4J, predicates));
