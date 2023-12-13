@@ -94,8 +94,8 @@ public class Main
         Config config = readConfigFile(configFile);
         Neo4J neo4J = new Neo4J();
         Set<String> entities = neo4J.entities();
-        LuceneIndexer luceneIndexer = LuceneIndexer.create(config, directory, true);
-        EmbeddingIndexer embeddingIndexer = EmbeddingIndexer.create(entities, directory);
+        LuceneIndexer luceneIndexer = LuceneIndexer.create(entities, config, directory, true);
+        EmbeddingIndexer embeddingIndexer = EmbeddingIndexer.create(entities, directory, true);
         Thread embeddingIndexingThread = new Thread(embeddingIndexer::constructIndex);
         embeddingIndexingThread.start();
 
