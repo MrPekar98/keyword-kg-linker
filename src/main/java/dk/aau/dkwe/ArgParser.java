@@ -4,6 +4,9 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
+/**
+ * Parser and container of program arguments
+ */
 public final class ArgParser
 {
     public enum Command

@@ -9,6 +9,9 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Set;
 
+/**
+ * Factory class to instantiate indexes
+ */
 public final class IndexBuilder
 {
     private static final String LUCENE_FOLDER = "lucene/";

@@ -1,11 +1,13 @@
 package dk.aau.dkwe.connector;
 
-import org.apache.commons.lang3.tuple.Pair;
 import org.neo4j.driver.*;
 
 import java.util.*;
 import java.util.logging.Level;
 
+/**
+ * Neo4J connector with methods for a variety of different queries
+ */
 public final class Neo4J implements AutoCloseable
 {
     private Driver driver;

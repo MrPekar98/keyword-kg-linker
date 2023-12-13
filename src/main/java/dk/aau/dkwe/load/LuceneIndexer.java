@@ -14,6 +14,9 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
+/**
+ * Indexes KG entities using 4 fields: entity URI, label, set of string literals, and label and string literals of direct KG neighbors
+ */
 public class LuceneIndexer implements Indexer<String, Map<String, Double>>
 {
     private final Config config;
@@ -33,6 +36,10 @@ public class LuceneIndexer implements Indexer<String, Map<String, Double>>
         this.parallelized = parallelize;
     }
 
+    /**
+     * Getter to constructed Lucene index
+     * @return Lucene index
+     */
     @Override
     public Index<String, Map<String, Double>> getIndex()
     {
@@ -47,6 +54,11 @@ public class LuceneIndexer implements Indexer<String, Map<String, Double>>
         }
     }
 
+    /**
+     * Constructs the Lucene index of 4 fields
+     * The indexing can be parallelized using multiple threads
+     * @return
+     */
     @Override
     public boolean constructIndex()
     {

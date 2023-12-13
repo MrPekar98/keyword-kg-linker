@@ -8,6 +8,9 @@ import org.apache.lucene.search.*;
 import java.io.IOException;
 import java.util.*;
 
+/**
+ * Lucene index searching using 1 of 4 fields: URI, label, string literals of entity, and label and string literals of direct KG neighbors of the entity
+ */
 public class LuceneIndex implements Index<String, Map<String, Double>>
 {
     public static final String URI_FIELD = "URI";
@@ -28,6 +31,12 @@ public class LuceneIndex implements Index<String, Map<String, Double>>
         this.parsers.put(SUB_DESCRIPTION_FIELD, new QueryParser(SUB_DESCRIPTION_FIELD, new StandardAnalyzer()));
     }
 
+    /**
+     * Perform keyword search using one of the specified fields
+     * @param key Keyword query
+     * @param field Field to search
+     * @return Map of retrieved entities and their matching score
+     */
     @Override
     public Map<String, Double> lookup(String key, String field)
     {

@@ -2,6 +2,9 @@ package dk.aau.dkwe.candidate;
 
 import java.io.*;
 
+/**
+ * Serializes embeddings index to disk or deserializes it from disk
+ */
 public class EmbeddingIndexBuilder
 {
     private static final String FILE_NAME = "embedding.idx";

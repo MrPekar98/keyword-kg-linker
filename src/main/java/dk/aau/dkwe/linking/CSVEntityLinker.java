@@ -8,6 +8,9 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Links all non-numeric cells in the given CSV table and writes the output on disk
+ */
 public class CSVEntityLinker
 {
     private MentionLinker linker;

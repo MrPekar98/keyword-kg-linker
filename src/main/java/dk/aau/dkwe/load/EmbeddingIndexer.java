@@ -10,6 +10,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * Indexing og KG entity embeddings
+ */
 public class EmbeddingIndexer implements Indexer<String, List<Double>>
 {
     private EmbeddingIndex index = new EmbeddingIndex();
@@ -36,12 +39,20 @@ public class EmbeddingIndexer implements Indexer<String, List<Double>>
         this.isClosed = false;
     }
 
+    /**
+     * Getter of the constructed embeddings index
+     * @return
+     */
     @Override
     public Index<String, List<Double>> getIndex()
     {
         return this.index;
     }
 
+    /**
+     * Constructs the index of BERT embeddings of KG entities
+     * @return True if the index was constructed successfully, otherwise false
+     */
     @Override
     public boolean constructIndex()
     {
@@ -52,15 +63,8 @@ public class EmbeddingIndexer implements Indexer<String, List<Double>>
 
         for (String entity : this.entities)
         {
-            float[] embedding = BERT.embedSequence(entity);
-            List<Double> embeddingsList = new ArrayList<>(embedding.length);
-
-            for (float e : embedding)
-            {
-                embeddingsList.add((double) e);
-            }
-
-            this.index.add(entity, embeddingsList);
+            List<Double> embedding = embedding(entity);
+            this.index.add(entity, embedding);
         }
 
         this.isClosed = true;
@@ -68,5 +72,22 @@ public class EmbeddingIndexer implements Indexer<String, List<Double>>
         IndexBuilder.embeddingBuilder(this.directory, this.index);
 
         return true;
+    }
+
+    /**
+     * Retrieve BERT embeddings of given text
+     * Warning: This method cannot be called after constructing the index, as the BERT class is closed.
+     */
+    public static List<Double> embedding(String text)
+    {
+        float[] embedding = BERT.embedSequence(text);
+        List<Double> embeddingLst = new ArrayList<>(embedding.length);
+
+        for (float e : embedding)
+        {
+            embeddingLst.add((double) e);
+        }
+
+        return embeddingLst;
     }
 }

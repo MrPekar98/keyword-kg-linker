@@ -4,12 +4,16 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import dk.aau.dkwe.candidate.EmbeddingIndex;
 import dk.aau.dkwe.candidate.IndexBuilder;
+import dk.aau.dkwe.load.EmbeddingIndexer;
 import dk.aau.dkwe.utils.MathUtils;
 
 import java.io.File;
 import java.util.Iterator;
 import java.util.List;
 
+/**
+ * Links a mention to a KG entity using BERT embeddings
+ */
 public class EmbeddingLinker extends MentionLinker
 {
     private final Cache<String, String> cache;
@@ -23,6 +27,11 @@ public class EmbeddingLinker extends MentionLinker
                 .build();
     }
 
+    /**
+     * Finds the KG entity with the highest cosine similarity to the embeddings of the entity mention
+     * @param mention Entity mention
+     * @return KG entity with the highest cosine similarity
+     */
     @Override
     protected String performLink(String mention)
     {
@@ -33,15 +42,10 @@ public class EmbeddingLinker extends MentionLinker
             return cachedLink;
         }
 
-        List<Double> mentionEmbedding = this.index.lookup(mention);
+        List<Double> mentionEmbedding = EmbeddingIndexer.embedding(mention);
         Iterator<String> entities = this.index.keys();
         double highestScore = -1.0;
         String bestEntity = null;
-
-        if (mentionEmbedding == null)
-        {
-            return bestEntity;
-        }
 
         while (entities.hasNext())
         {

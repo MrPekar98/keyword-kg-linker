@@ -7,6 +7,9 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 
+/**
+ * Computes a ranked list of strings with the shortest Levenshtein distance to a given input string
+ */
 public class LevenshteinRanker implements Ranker<String>
 {
     public static LevenshteinRanker levenshteinRank()

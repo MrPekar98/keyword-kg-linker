@@ -9,6 +9,9 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ * Keyword-based entity linking of entity mentions
+ */
 public class KeywordLinker extends MentionLinker
 {
     private final LuceneIndex lucene;
@@ -27,6 +30,12 @@ public class KeywordLinker extends MentionLinker
         }
     }
 
+    /**
+     * Keyword searches for KG entities using KG labels, string predicates, and direct neighbors using labels and string predicates
+     * It then applies a weighted linear combination of the 3 searched fields and returns the entity with the highest linear combination score
+     * @param mention Entity mention
+     * @return KG entity with the highest weighted linear combination score
+     */
     @Override
     protected String performLink(String mention)
     {

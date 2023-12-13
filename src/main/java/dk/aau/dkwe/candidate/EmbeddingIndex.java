@@ -6,6 +6,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Simple hash index of KG embeddings
+ */
 public class EmbeddingIndex implements Index<String, List<Double>>, Serializable
 {
     private final Map<String, List<Double>> embeddings = new HashMap<>();

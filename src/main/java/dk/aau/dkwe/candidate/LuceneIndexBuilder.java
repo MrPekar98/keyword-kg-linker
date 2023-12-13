@@ -14,6 +14,9 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Set;
 
+/**
+ * Writes Lucene index to disk
+ */
 public final class LuceneIndexBuilder
 {
     public static void build(Set<dk.aau.dkwe.candidate.Document> documents, File directory) throws IOException
