@@ -25,10 +25,6 @@ then
   then
     echo "Knowledge graph directory '${KG_DIR}' does not exist"
     exit 1
-  elif [[ ! -f ${PWD}/${KG_DIR} ]]
-  then
-    echo "Copying KG directory to '${PWD}/${KG_DIR}', but this directory does not exist"
-    exit 1
   fi
 
   docker network inspect linker-dev > /dev/null 2>&1 || docker network create --driver bridge linker-dev
