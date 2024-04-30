@@ -14,7 +14,7 @@ public final class Neo4J implements AutoCloseable
 
     public Neo4J()
     {
-        String dbUri = "bolt://neo4j:7687",
+        String dbUri = "bolt://" + System.getenv().get("NEO4J_IP") + ":7687",
                 dbUser = "neo4j",
                 dbPassword = "admin";
         this.driver = GraphDatabase.driver(dbUri, AuthTokens.basic(dbUser, dbPassword),

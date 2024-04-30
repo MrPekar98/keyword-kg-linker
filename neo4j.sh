@@ -28,7 +28,7 @@ then
   fi
 
   docker network inspect linker-dev > /dev/null 2>&1 || docker network create --driver bridge linker-dev
-  docker run -d -p ${PORT}:${PORT} --network linker-dev -p ${PORT_BULP}:${PORT_BULP} --name neo4j -v ${PWD}/${KG_DIR}:/kg \
+  docker run -d -p ${PORT}:${PORT} --network linker-dev -p ${PORT_BULP}:${PORT_BULP} --name neo4j-linker -v ${PWD}/${KG_DIR}:/kg \
       -e NEO4J_AUTH=none \
       -e NEO4JLABS_PLUGINS='[\"apoc\", \"n10s\"]' \
       -e NEO4J_dbms_security_procedures_unrestricted=apoc.* \
@@ -38,14 +38,14 @@ then
 
   echo "Installing Neosemantics..."
   sleep 1m
-  docker exec neo4j wget -P plugins/ https://github.com/neo4j-labs/neosemantics/releases/download/4.1.0.1/neosemantics-4.1.0.1.jar
-  docker exec neo4j bash -c "echo 'dbms.unmanaged_extension_classes=n10s.endpoint=/rdf' >> conf/neo4j.conf"
-  docker restart neo4j
+  docker exec neo4j-linker wget -P plugins/ https://github.com/neo4j-labs/neosemantics/releases/download/4.1.0.1/neosemantics-4.1.0.1.jar
+  docker exec neo4j-linker bash -c "echo 'dbms.unmanaged_extension_classes=n10s.endpoint=/rdf' >> conf/neo4j.conf"
+  docker restart neo4j-linker
 
   echo "Importing knowledge graph..."
   sleep 1m
-  docker cp load.sh neo4j:/var/lib/neo4j
-  docker exec neo4j bash -c "./load.sh ${NEO4J_HOME} ${NEO4J_IMPORT}"
+  docker cp load.sh neo4j-linker:/var/lib/neo4j
+  docker exec neo4j-linker bash -c "./load.sh ${NEO4J_HOME} ${NEO4J_IMPORT}"
 
   echo
   echo "Done"
@@ -59,5 +59,5 @@ else
   echo "Starting Neo4J..."
   echo
 
-  docker start neo4j
+  docker start neo4j-linker
 fi

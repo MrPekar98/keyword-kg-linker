@@ -3,12 +3,7 @@
 set -e
 
 IMAGE="keyword-kg-linker"
-
-if [[ "$(docker images -q ${IMAGE})" == "" ]]
-then
-  echo "Building Docker image"
-  docker build -t ${IMAGE} .
-fi
+NEO4J_ADDRESS=$(docker exec neo4j-linker hostname -I)
 
 if [[ "$#" -eq 4 ]]   # Indexing
 then
@@ -43,8 +38,16 @@ then
     exit 1
   fi
 
-  docker run --rm -v ${PWD}/${DATA_DIR}:/data --network linker-dev ${IMAGE} \
+  # If image has not been built yet
+  if [[ "$(docker images -q ${IMAGE})" == "" ]]
+  then
+    echo "Building Docker image"
+    docker build -t ${IMAGE} . --build-arg CONFIG_FILE=${CONFIG} --no-cache
+  fi
+
+  docker run --rm -v ${PWD}/${DATA_DIR}:/data -e NEO4J_IP=${NEO4J_ADDRESS} --network linker-dev ${IMAGE} \
       java -jar keywork-linker.jar index -dir /data -config ${CONFIG}
+
 elif [[ "$#" -eq 10 ]]   # Linking
 then
   TABLE=""
@@ -156,10 +159,17 @@ then
     exit 1
   fi
 
+  # If image has not been built yet
+  if [[ "$(docker images -q ${IMAGE})" == "" ]]
+  then
+    echo "Building Docker image"
+    docker build -t ${IMAGE} . --build-arg CONFIG_FILE=${CONFIG} --no-cache
+  fi
+
   mkdir -p ${OUTPUT}
   TABLE_FILENAME=$(basename ${TABLE})
   TABLE_DIR=$(dirname $TABLE)
-  docker run --rm -v ${PWD}/${DIRECTORY}:/data -v ${PWD}/${OUTPUT}:/output -v ${PWD}/${TABLE_DIR}:/table --network linker-dev \
+  docker run --rm -v ${PWD}/${DIRECTORY}:/data -v ${PWD}/${OUTPUT}:/output -v ${PWD}/${TABLE_DIR}:/table -e NEO4J_IP=${NEO4J_ADDRESS} --network linker-dev \
       ${IMAGE} java -jar keywork-linker.jar link -table /table/${TABLE_FILENAME} -output /output -dir /data -config ${CONFIG} -type ${TYPE}
 else
   echo "Did not understand parameters"
