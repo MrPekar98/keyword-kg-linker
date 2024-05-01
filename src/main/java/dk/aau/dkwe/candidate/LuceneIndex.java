@@ -63,7 +63,7 @@ public class LuceneIndex implements Index<String, Map<String, Double>>
 
         catch (ParseException | IOException e)
         {
-            return null;
+            return Collections.emptyMap();
         }
     }
 
