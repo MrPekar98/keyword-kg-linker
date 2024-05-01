@@ -35,7 +35,7 @@ public class Main
 
         for (ArgParser.Parameter p : parser.getParameters())
         {
-            if (p == ArgParser.Parameter.TABLE || p == ArgParser.Parameter.DIRECTORY)
+            if (p == ArgParser.Parameter.TABLES || p == ArgParser.Parameter.DIRECTORY)
             {
                 File f = new File(p.getValue());
 
@@ -73,7 +73,8 @@ public class Main
         }
     }
 
-    private static void index(Set<ArgParser.Parameter> parameters) throws Exception {
+    private static void index(Set<ArgParser.Parameter> parameters) throws Exception
+    {
         Instant start = Instant.now();
         File directory = null, configFile = null;
         System.out.println("Indexing...");
@@ -116,7 +117,7 @@ public class Main
 
     private static void link(Set<ArgParser.Parameter> parameters)
     {
-        File resultDir = null, tableFile = null, indexDir = null, configFile = null;
+        File resultDir = null, tables = null, indexDir = null, configFile = null;
         String linkerType = null;
         System.out.println("Linking...");
 
@@ -124,7 +125,7 @@ public class Main
         {
             switch (param)
             {
-                case TABLE -> tableFile = new File(param.getValue());
+                case TABLES -> tables = new File(param.getValue());
                 case DIRECTORY -> indexDir = new File(param.getValue());
                 case OUTPUT -> resultDir = new File(param.getValue());
                 case CONFIG -> configFile = new File(param.getValue());
@@ -142,7 +143,20 @@ public class Main
             };
             CSVEntityLinker csvLinker = new CSVEntityLinker(linker);
             Instant start = Instant.now();
-            csvLinker.linkTable(tableFile, resultDir);
+
+            if (tables.isDirectory())
+            {
+                for (File tableFile : tables.listFiles())
+                {
+                    csvLinker.linkTable(tableFile, resultDir);
+                }
+            }
+
+            else
+            {
+                csvLinker.linkTable(tables, resultDir); // 'tables' here is a single table file
+            }
+
             linker.close();
 
             Duration duration = Duration.between(start, Instant.now());

@@ -48,7 +48,7 @@ public class CSVEntityLinker
                 output.add(outputLine);
             }
 
-            File outputFile = new File(outputDirectory.getAbsolutePath() + "/results.csv");
+            File outputFile = new File(outputDirectory.getAbsolutePath() + "/" + tableFile.getName());
             flushLinks(output, outputFile);
         }
     }

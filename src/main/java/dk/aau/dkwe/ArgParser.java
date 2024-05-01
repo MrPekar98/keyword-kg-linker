@@ -37,7 +37,7 @@ public final class ArgParser
     public enum Parameter
     {
         DIRECTORY("-dir"),
-        TABLE("-table"),
+        TABLES("-tables"),
         OUTPUT("-output"),
         CONFIG("-config"),
         TYPE("-type");
@@ -69,7 +69,7 @@ public final class ArgParser
         public static Parameter parse(String str)
         {
             return DIRECTORY.toString().equals(str) ? DIRECTORY :
-                    TABLE.toString().equals(str) ? TABLE :
+                    TABLES.toString().equals(str) ? TABLES :
                             OUTPUT.toString().equals(str) ? OUTPUT :
                                     CONFIG.toString().equals(str) ? CONFIG :
                                             TYPE.toString().equals(str) ? TYPE : null;
@@ -179,7 +179,7 @@ public final class ArgParser
         }
 
         Iterator<Parameter> params = this.parameters.iterator();
-        boolean hasDir = false, hasOutput = false, hasTable = false, hasConfig = false, hasType = false;
+        boolean hasDir = false, hasOutput = false, hasTables = false, hasConfig = false, hasType = false;
 
         while (params.hasNext())
         {
@@ -188,7 +188,7 @@ public final class ArgParser
             switch (p)
             {
                 case DIRECTORY -> hasDir = true;
-                case TABLE -> hasTable = true;
+                case TABLES -> hasTables = true;
                 case OUTPUT -> hasOutput = true;
                 case CONFIG -> hasConfig = true;
                 case TYPE -> hasType = true;
@@ -202,10 +202,10 @@ public final class ArgParser
             }
         }
 
-        if (!(hasDir && hasOutput && hasTable && hasConfig && hasType))
+        if (!(hasDir && hasOutput && hasTables && hasConfig && hasType))
         {
             this.parsed = false;
-            this.parseError = "Linking requires parameters '-dir', '-table', '-output', '-config', and '-type'";
+            this.parseError = "Linking requires parameters '-dir', '-tables', '-output', '-config', and '-type'";
         }
     }
 

@@ -50,15 +50,15 @@ then
 
 elif [[ "$#" -eq 10 ]]   # Linking
 then
-  TABLE=""
+  TABLES=""
   OUTPUT=""
   DIRECTORY=""
   CONFIG=""
   TYPE=""
 
-  if [[ $1 == "-table" ]]
+  if [[ $1 == "-tables" ]]
   then
-    TABLE=$2
+    TABLES=$2
   elif [[ $1 == "-output" ]]
   then
     OUTPUT=$2
@@ -79,9 +79,9 @@ then
   if [[ $3 == "-output" ]]
   then
     OUTPUT=$4
-  elif [[ $3 == "-table" ]]
+  elif [[ $3 == "-tables" ]]
   then
-    TABLE=$4
+    TABLES=$4
   elif [[ $3 == "-dir" ]]
   then
     DIRECTORY=$4
@@ -96,9 +96,9 @@ then
     exit 1
   fi
 
-  if [[ $5 == "-table" ]]
+  if [[ $5 == "-tables" ]]
   then
-    TABLE=$6
+    TABLES=$6
   elif [[ $5 == "-output" ]]
   then
     OUTPUT=$6
@@ -115,9 +115,9 @@ then
     echo "Option '$5' was not recognized"
   fi
 
-  if [[ $7 == "-table" ]]
+  if [[ $7 == "-tables" ]]
     then
-      TABLE=$8
+      TABLES=$8
     elif [[ $7 == "-output" ]]
     then
       OUTPUT=$8
@@ -134,9 +134,9 @@ then
       echo "Option '$7' was not recognized"
     fi
 
-  if [[ $9 == "-table" ]]
+  if [[ $9 == "-tables" ]]
       then
-        TABLE=${10}
+        TABLES=${10}
       elif [[ $9 == "-output" ]]
       then
         OUTPUT=${10}
@@ -153,9 +153,9 @@ then
         echo "Option '$9' was not recognized"
       fi
 
-  if [[ ! -f ${TABLE} ]]
+  if [[ ! -d ${TABLES} && ! -f ${TABLES} ]]
   then
-    echo "Table file '${TABLE}' does not exist"
+    echo "Table directory or file '${TABLES}' does not exist"
     exit 1
   fi
 
@@ -167,10 +167,10 @@ then
   fi
 
   mkdir -p ${OUTPUT}
-  TABLE_FILENAME=$(basename ${TABLE})
-  TABLE_DIR=$(dirname $TABLE)
-  docker run --rm -v ${PWD}/${DIRECTORY}:/data -v ${PWD}/${OUTPUT}:/output -v ${PWD}/${TABLE_DIR}:/table -e NEO4J_IP=${NEO4J_ADDRESS} --network linker-dev \
-      ${IMAGE} java -jar keywork-linker.jar link -table /table/${TABLE_FILENAME} -output /output -dir /data -config ${CONFIG} -type ${TYPE}
+  BASE_FILENAME=$(basename ${TABLES})
+  TABLE_DIR=$(dirname $TABLES)
+  docker run --rm -v ${PWD}/${DIRECTORY}:/data -v ${PWD}/${OUTPUT}:/output -v ${PWD}/${TABLE_DIR}:/tables -e NEO4J_IP=${NEO4J_ADDRESS} --network linker-dev \
+      ${IMAGE} java -jar keywork-linker.jar link -tables /tables/${BASE_FILENAME} -output /output -dir /data -config ${CONFIG} -type ${TYPE}
 else
   echo "Did not understand parameters"
 fi
