@@ -32,6 +32,7 @@ It must specify a set of Neo4J predicates to retrieve entity string representati
 For example, the RDFS label corresponds to `rdfs__label` in Neosemantics in Neo4J.
 Second, the configuration file contains weights of different entity components.
 `LABEL` is the weight of the entity label, `DESCRIPTION` is the weight of the entity string representations, and `SUB-DESCRIPTION` is the weight of entity descriptions of neighboring entities.
+You can optionally specify a domain from which the entities must be. For example, you can specify "wikidata" to ensure only Wikidata entities are indexes. You can leave this field empty to disable filtering.
 Last, it must specify number of candidate entities to disambiguate.
 
 When the script is called the first time, it will build a Docker image before it will run the container to index the entity linker.

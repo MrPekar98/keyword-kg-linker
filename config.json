@@ -1,4 +1,5 @@
 {
+    "domain": "",
     "predicates": [
         "ns1__shortname",
         "ns1__surname",

@@ -14,6 +14,7 @@ import java.io.*;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class Main
 {
@@ -93,8 +94,13 @@ public class Main
         }
 
         Config config = readConfigFile(configFile);
+        String domain = config.domain();
         Neo4J neo4J = new Neo4J();
-        Set<String> entities = neo4J.entities();
+        Set<String> entities = neo4J
+                                .entities()
+                                .stream()
+                                .filter(entity -> entity.contains(domain))
+                                .collect(Collectors.toSet());
         LuceneIndexer luceneIndexer = LuceneIndexer.create(entities, config, directory, true);
         EmbeddingIndexer embeddingIndexer = EmbeddingIndexer.create(entities, directory, true);
         Thread embeddingIndexingThread = new Thread(embeddingIndexer::constructIndex);
