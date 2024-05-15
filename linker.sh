@@ -3,7 +3,7 @@
 set -e
 
 IMAGE="keyword-kg-linker"
-CONTAINER=keyword-kg-linker-container
+CONTAINER="keyword-kg-linker-container"
 NEO4J_ADDRESS=$(docker exec neo4j-linker hostname -I)
 
 if [[ "$#" -eq 4 ]]   # Indexing
