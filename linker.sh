@@ -72,8 +72,8 @@ then
     docker build -t ${IMAGE} . --build-arg CONFIG_FILE=${CONFIG} --no-cache
   fi
 
-  docker run --rm -v ${PWD}/${DATA_DIR}:/data --network linker-dev --name ${CONTAINER} ${IMAGE} \
-      java -jar keywork-linker.jar index -dir /data -config ${CONFIG}
+  docker run --rm -v ${PWD}/${DATA_DIR}:/data -v ${PWD}/${KG_DIR}:/kg --network linker-dev --name ${CONTAINER} ${IMAGE} \
+      java -jar keywork-linker.jar index -dir /data -kg /kg -config ${CONFIG}
 
 elif [[ "$#" -eq 10 ]]   # Linking
 then
