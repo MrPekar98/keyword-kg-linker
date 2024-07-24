@@ -134,10 +134,10 @@ public final class ArgParser
 
     private void checkIndexing()
     {
-        if (this.parameters.size() != 2)
+        if (this.parameters.size() != 3)
         {
             this.parsed = false;
-            this.parseError = "Expects two parameters when indexing";
+            this.parseError = "Expects three parameters when indexing";
         }
 
         Iterator<Parameter> parameters = this.parameters.iterator();
