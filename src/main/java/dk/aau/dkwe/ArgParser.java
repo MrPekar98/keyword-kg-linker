@@ -73,7 +73,8 @@ public final class ArgParser
                     TABLES.toString().equals(str) ? TABLES :
                             OUTPUT.toString().equals(str) ? OUTPUT :
                                     CONFIG.toString().equals(str) ? CONFIG :
-                                            TYPE.toString().equals(str) ? TYPE : null;
+                                            TYPE.toString().equals(str) ? TYPE :
+                                                    KG_DIRECTORY.toString().equals(str) ? KG_DIRECTORY : null;
         }
     }
 
