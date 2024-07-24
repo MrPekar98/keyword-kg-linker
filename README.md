@@ -2,38 +2,16 @@
 Keyword-based table to knowledge graph entity linking.
 
 ## Setup
-Start a Neo4J instance with the following call.
-Add the directory of the knowledge graph files if this is the first time starting the Neo4J instance.
-Note that the knowledge graph files must be Turtle files.
+Store all the KG files in a single directory, and make sure all the files are in N-Triples format.
+Now, the entity linker needs to be indexed using the KG files.
 
 ```bash
-./neo4j.sh [<KG_DIR>]
+./linker.sh -dir <DIRECTORY> -kg <KG_DIRECTORY> -config <CONFIG_FILE>
 ```
 
-For example, if you have all of your Turtle file in `kg_files/`, then you need to run the following command:
-
-```bash
-./neo4j.sh kg_files/
-```
-
-If this is the first time, Neo4J will be setup, Neosemantics installed, and Neo4J populated with the knowledge graph triples.
-To start the instance after the first time, simply start the script without any parameters.
-The entity linker will not work without a populated Neo4J instance running.
-
-Now, the entity linker needs to be indexed using the populated Neo4J instance.
-
-```bash
-./linker.sh -dir <DIRECTORY> -config <CONFIG_FILE>
-```
-
-You must specify the directory in which to save the index files and the configuration file.
+You must specify the directory in which to save the index files, the directory containing the KG files, and the configuration file.
 See `config.json` for the content of this configuration file.
-It must specify a set of Neo4J predicates to retrieve entity string representations.
-For example, the RDFS label corresponds to `rdfs__label` in Neosemantics in Neo4J.
-Second, the configuration file contains weights of different entity components.
-`LABEL` is the weight of the entity label, `DESCRIPTION` is the weight of the entity string representations, and `SUB-DESCRIPTION` is the weight of entity descriptions of neighboring entities.
-You can optionally specify a domain from which the entities must be. For example, you can specify "wikidata" to ensure only Wikidata entities are indexes. You can leave this field empty to disable filtering.
-Last, it must specify number of candidate entities to disambiguate.
+It must specify number of candidate entities to disambiguate.
 
 When the script is called the first time, it will build a Docker image before it will run the container to index the entity linker.
 

@@ -1,6 +1,7 @@
 package dk.aau.dkwe.load;
 
 import com.robrua.nlp.bert.Bert;
+import dk.aau.dkwe.candidate.Document;
 import dk.aau.dkwe.candidate.EmbeddingIndex;
 import dk.aau.dkwe.candidate.Index;
 import dk.aau.dkwe.candidate.IndexBuilder;
@@ -21,7 +22,7 @@ import java.util.concurrent.Future;
 public class EmbeddingIndexer implements Indexer<String, List<Double>>
 {
     private final EmbeddingIndex index = new EmbeddingIndex();
-    private Set<String> entities;
+    private Set<Document> documents;
     private File directory;
     private boolean isClosed;
     private boolean isParallelized;
@@ -35,14 +36,14 @@ public class EmbeddingIndexer implements Indexer<String, List<Double>>
         BERT = Bert.load(MODEL_PATH);
     }
 
-    public static EmbeddingIndexer create(Set<String> entities, File indexDirectory, boolean parallelized)
+    public static EmbeddingIndexer create(Set<Document> documents, File indexDirectory, boolean parallelized)
     {
-        return new EmbeddingIndexer(entities, indexDirectory, parallelized);
+        return new EmbeddingIndexer(documents, indexDirectory, parallelized);
     }
 
-    private EmbeddingIndexer(Set<String> entities, File indexDirectory, boolean parallelized)
+    private EmbeddingIndexer(Set<Document> documents, File indexDirectory, boolean parallelized)
     {
-        this.entities = entities;
+        this.documents = documents;
         this.directory = indexDirectory;
         this.isClosed = false;
         this.isParallelized = parallelized;
@@ -77,7 +78,7 @@ public class EmbeddingIndexer implements Indexer<String, List<Double>>
 
         else
         {
-            insertEntities(this.entities);
+            insertEntities(this.documents);
         }
 
         this.isClosed = true;
@@ -89,14 +90,14 @@ public class EmbeddingIndexer implements Indexer<String, List<Double>>
 
     private void insertParallel()
     {
-        List<String> entityList = new ArrayList<>(this.entities);
+        List<Document> documentList = new ArrayList<>(this.documents);
         ExecutorService threadPool = Executors.newFixedThreadPool(THREADS);
         List<Future<?>> tasks = new ArrayList<>();
-        final int entityCount = this.entities.size(), splitSize = 10000, iterations = (int) Math.ceil((double) entityCount / splitSize);
+        final int entityCount = this.documents.size(), splitSize = 10000, iterations = (int) Math.ceil((double) entityCount / splitSize);
 
         for (int i = 0; i < iterations; i++)
         {
-            List<String> subset = entityList.subList(i * splitSize, Math.min((i + 1) * splitSize, entityCount - 1));
+            List<Document> subset = documentList.subList(i * splitSize, Math.min((i + 1) * splitSize, entityCount - 1));
             Future<?> task = threadPool.submit(() -> insertEntities(new HashSet<>(subset)));
             tasks.add(task);
         }
@@ -111,15 +112,15 @@ public class EmbeddingIndexer implements Indexer<String, List<Double>>
         });
     }
 
-    private void insertEntities(Set<String> entities)
+    private void insertEntities(Set<Document> documents)
     {
-        for (String entity : entities)
+        for (Document document : documents)
         {
-            List<Double> embedding = embedding(entity);
+            List<Double> embedding = embedding(document.uri());
 
             synchronized (this.mtx)
             {
-                this.index.add(entity, embedding);
+                this.index.add(document.uri(), embedding);
             }
         }
     }

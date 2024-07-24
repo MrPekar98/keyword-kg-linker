@@ -16,7 +16,6 @@ public class LuceneIndex implements Index<String, Map<String, Double>>
     public static final String URI_FIELD = "URI";
     public static final String LABEL_FIELD = "LABEL";
     public static final String DESCRIPTION_FIELD = "DESCRIPTION";
-    public static final String SUB_DESCRIPTION_FIELD = "SUB-DESCRIPTION";
     private final IndexSearcher searcher;
     private final Map<String, QueryParser> parsers = new HashMap<>();
     private final int resultSize;
@@ -28,7 +27,6 @@ public class LuceneIndex implements Index<String, Map<String, Double>>
         this.parsers.put(URI_FIELD, new QueryParser(URI_FIELD, new StandardAnalyzer()));
         this.parsers.put(LABEL_FIELD, new QueryParser(LABEL_FIELD, new StandardAnalyzer()));
         this.parsers.put(DESCRIPTION_FIELD, new QueryParser(DESCRIPTION_FIELD, new StandardAnalyzer()));
-        this.parsers.put(SUB_DESCRIPTION_FIELD, new QueryParser(SUB_DESCRIPTION_FIELD, new StandardAnalyzer()));
     }
 
     /**

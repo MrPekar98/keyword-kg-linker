@@ -37,6 +37,7 @@ public final class ArgParser
     public enum Parameter
     {
         DIRECTORY("-dir"),
+        KG_DIRECTORY("-kg"),
         TABLES("-tables"),
         OUTPUT("-output"),
         CONFIG("-config"),
@@ -139,7 +140,7 @@ public final class ArgParser
         }
 
         Iterator<Parameter> parameters = this.parameters.iterator();
-        boolean hasDir = false, hasConfig = false;
+        boolean hasDir = false, hasConfig = false, hasKG = false;
 
         while (parameters.hasNext())
         {
@@ -155,6 +156,11 @@ public final class ArgParser
                 hasConfig = true;
             }
 
+            else if (parameter == Parameter.KG_DIRECTORY)
+            {
+                hasKG = true;
+            }
+
             if (parameter.getValue() == null)
             {
                 this.parsed = false;
@@ -163,10 +169,10 @@ public final class ArgParser
             }
         }
 
-        if (!(hasDir && hasConfig))
+        if (!(hasDir && hasKG && hasConfig))
         {
             this.parsed = false;
-            this.parseError = "Indexing requires parameters '-dir' and '-config'";
+            this.parseError = "Indexing requires parameters '-dir', '-kg', and '-config'";
         }
     }
 

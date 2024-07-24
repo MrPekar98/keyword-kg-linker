@@ -6,9 +6,10 @@ IMAGE="keyword-kg-linker"
 CONTAINER="keyword-kg-linker-container"
 NEO4J_ADDRESS=$(docker exec neo4j-linker hostname -I)
 
-if [[ "$#" -eq 4 ]]   # Indexing
+if [[ "$#" -eq 6 ]]   # Indexing
 then
   DATA_DIR=""
+  KG_DIR=""
   CONFIG=""
 
   if [[ $1 == "-dir" ]]
@@ -17,6 +18,9 @@ then
   elif [[ $1 == "-config" ]]
   then
     CONFIG=$2
+  elif [[ $1 == "-kg" ]]
+  then
+    KG_DIR=$2
   else
     echo "Option '$1' was not recognized"
     exit 1
@@ -28,14 +32,37 @@ then
   elif [[ $3 == '-config' ]]
   then
     CONFIG=$4
+  elif [[ $3 == "-kg" ]]
+  then
+    KG_DIR=$4
   else
     echo "Option '$3' was not recognized"
+    exit 1
+  fi
+
+  if [[ $5 == "-dir" ]]
+  then
+    DATA_DIR=$6
+  elif [[ $5 == "-config" ]]
+  then
+    CONFIG=$6
+  elif [[ $5 == "-kg" ]]
+  then
+    KG_DIR=$6
+  else
+    echo "Option '$5' was not recognized"
     exit 1
   fi
 
   if [[ ! -d ${DATA_DIR} ]]
   then
     echo "Directory '${DATA_DIR}' does not exist"
+    exit 1
+  fi
+
+  if [[ ! -d ${KG_DIR} ]]
+  then
+    echo "Directory '${KG_DIR}' does not exist"
     exit 1
   fi
 

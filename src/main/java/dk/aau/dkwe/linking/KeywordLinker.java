@@ -22,9 +22,7 @@ public class KeywordLinker extends MentionLinker
         this.lucene = IndexBuilder.luceneBuilder(indexDirectory, candidatesSize);
         this.weights = fieldWeights;
 
-        if (!this.weights.containsKey(LuceneIndex.LABEL_FIELD) ||
-                !this.weights.containsKey(LuceneIndex.DESCRIPTION_FIELD) ||
-                !this.weights.containsKey(LuceneIndex.SUB_DESCRIPTION_FIELD))
+        if (!this.weights.containsKey(LuceneIndex.LABEL_FIELD) || !this.weights.containsKey(LuceneIndex.DESCRIPTION_FIELD))
         {
             throw new IllegalArgumentException("Weights are missing for one or more fields");
         }
@@ -42,17 +40,14 @@ public class KeywordLinker extends MentionLinker
         String bestEntity = null;
         double bestEntityScore = -1;
         Map<String, Double> candidatesLabel = this.lucene.lookup(mention, LuceneIndex.LABEL_FIELD),
-                candidatesDescription = this.lucene.lookup(mention, LuceneIndex.DESCRIPTION_FIELD),
-                candidatesSubDescription = this.lucene.lookup(mention, LuceneIndex.SUB_DESCRIPTION_FIELD);
+                candidatesDescription = this.lucene.lookup(mention, LuceneIndex.DESCRIPTION_FIELD);
         Set<String> entities = new HashSet<>(candidatesLabel.keySet());
         entities.addAll(candidatesDescription.keySet());
-        entities.addAll(candidatesSubDescription.keySet());
 
         for (String entity : entities)
         {
             double combination = this.weights.get(LuceneIndex.LABEL_FIELD) * candidatesLabel.getOrDefault(entity, 0.0)
-                    + this.weights.get(LuceneIndex.DESCRIPTION_FIELD) * candidatesDescription.getOrDefault(entity, 0.0)
-                    + this.weights.get(LuceneIndex.SUB_DESCRIPTION_FIELD) * candidatesSubDescription.getOrDefault(entity, 0.0);
+                    + this.weights.get(LuceneIndex.DESCRIPTION_FIELD) * candidatesDescription.getOrDefault(entity, 0.0);
 
             if (combination > bestEntityScore)
             {
