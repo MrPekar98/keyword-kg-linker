@@ -4,7 +4,6 @@ set -e
 
 IMAGE="keyword-kg-linker"
 CONTAINER="keyword-kg-linker-container"
-NEO4J_ADDRESS=$(docker exec neo4j-linker hostname -I)
 
 if [[ "$#" -eq 6 ]]   # Indexing
 then
@@ -73,7 +72,7 @@ then
     docker build -t ${IMAGE} . --build-arg CONFIG_FILE=${CONFIG} --no-cache
   fi
 
-  docker run --rm -v ${PWD}/${DATA_DIR}:/data -e NEO4J_IP=${NEO4J_ADDRESS} --network linker-dev --name ${CONTAINER} ${IMAGE} \
+  docker run --rm -v ${PWD}/${DATA_DIR}:/data --network linker-dev --name ${CONTAINER} ${IMAGE} \
       java -jar keywork-linker.jar index -dir /data -config ${CONFIG}
 
 elif [[ "$#" -eq 10 ]]   # Linking
@@ -197,7 +196,7 @@ then
   mkdir -p ${OUTPUT}
   BASE_FILENAME=$(basename ${TABLES})
   TABLE_DIR=$(dirname $TABLES)
-  docker run --rm -v ${PWD}/${DIRECTORY}:/data -v ${PWD}/${OUTPUT}:/output -v ${PWD}/${TABLE_DIR}:/tables -e NEO4J_IP=${NEO4J_ADDRESS} --network linker-dev \
+  docker run --rm -v ${PWD}/${DIRECTORY}:/data -v ${PWD}/${OUTPUT}:/output -v ${PWD}/${TABLE_DIR}:/tables --network linker-dev \
       --name ${CONTAINER} ${IMAGE} java -jar keywork-linker.jar link -tables /tables/${BASE_FILENAME} -output /output -dir /data -config ${CONFIG} -type ${TYPE}
 else
   echo "Did not understand parameters"
