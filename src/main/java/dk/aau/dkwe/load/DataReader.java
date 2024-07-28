@@ -43,7 +43,7 @@ public class DataReader
             if (log)
             {
                 System.out.print("                                                                                 \r");
-                System.out.print("Reading " + ++fileCount + "/" + kgFile.length() + " (" + kgFile.getName() + ")\r");
+                System.out.print("Reading " + ++fileCount + "/" + kgFiles.length + " (" + kgFile.getName() + ")\r");
             }
 
             try (BufferedReader reader = Files.newBufferedReader(kgFile.toPath(), StandardCharsets.ISO_8859_1))

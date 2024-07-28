@@ -72,6 +72,7 @@ then
     docker build -t ${IMAGE} . --build-arg CONFIG_FILE=${CONFIG} --no-cache
   fi
 
+  docker network inspect linker-dev > /dev/null 2>&1 || docker network create --driver bridge linker-dev
   docker run --rm -v ${PWD}/${DATA_DIR}:/data -v ${PWD}/${KG_DIR}:/kg --network linker-dev --name ${CONTAINER} ${IMAGE} \
       java -jar keywork-linker.jar index -dir /data -kg /kg -config ${CONFIG}
 
@@ -196,6 +197,7 @@ then
   mkdir -p ${OUTPUT}
   BASE_FILENAME=$(basename ${TABLES})
   TABLE_DIR=$(dirname $TABLES)
+  docker network inspect linker-dev > /dev/null 2>&1 || docker network create --driver bridge linker-dev
   docker run --rm -v ${PWD}/${DIRECTORY}:/data -v ${PWD}/${OUTPUT}:/output -v ${PWD}/${TABLE_DIR}:/tables --network linker-dev \
       --name ${CONTAINER} ${IMAGE} java -jar keywork-linker.jar link -tables /tables/${BASE_FILENAME} -output /output -dir /data -config ${CONFIG} -type ${TYPE}
 else
