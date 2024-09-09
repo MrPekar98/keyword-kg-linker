@@ -4,6 +4,7 @@ set -e
 
 IMAGE="keyword-kg-linker"
 CONTAINER="keyword-kg-linker-container"
+WORD2VEC="word2vec/"
 
 if [[ "$#" -eq 6 ]]   # Indexing
 then
@@ -73,7 +74,7 @@ then
   fi
 
   docker network inspect linker-dev > /dev/null 2>&1 || docker network create --driver bridge linker-dev
-  docker run --rm -v ${PWD}/${DATA_DIR}:/data -v ${PWD}/${KG_DIR}:/kg --network linker-dev --name ${CONTAINER} ${IMAGE} \
+  docker run --rm -v ${PWD}/${DATA_DIR}:/data -v ${PWD}/${KG_DIR}:/kg -v ${PWD}/${WORD2VEC}:/word2vec/ --network linker-dev --name ${CONTAINER} ${IMAGE} \
       java -jar keywork-linker.jar index -dir /data -kg /kg -config ${CONFIG}
 
 elif [[ "$#" -eq 10 ]]   # Linking

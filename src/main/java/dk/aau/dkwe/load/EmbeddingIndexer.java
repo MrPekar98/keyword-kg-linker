@@ -1,12 +1,14 @@
 package dk.aau.dkwe.load;
 
-import com.robrua.nlp.bert.Bert;
+import com.medallia.word2vec.Searcher;
+import com.medallia.word2vec.Word2VecModel;
 import dk.aau.dkwe.candidate.Document;
 import dk.aau.dkwe.candidate.EmbeddingIndex;
 import dk.aau.dkwe.candidate.Index;
 import dk.aau.dkwe.candidate.IndexBuilder;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -24,16 +26,26 @@ public class EmbeddingIndexer implements Indexer<String, List<Double>>
     private final EmbeddingIndex index = new EmbeddingIndex();
     private Set<Document> documents;
     private File directory;
-    private boolean isClosed;
     private boolean isParallelized;
     private final Object mtx = new Object();
-    private static final Bert BERT;
-    private static final String MODEL_PATH = "com/robrua/nlp/easy-bert/bert-uncased-L-12-H-768-A-12";
+    private static Word2VecModel model = null;
+    private static Searcher searcher = null;
+    private static final File MODEL_PATH = new File("/word2vec/GoogleNews-vectors-negative300.bin.gz");
     private static final int THREADS = 4;
 
     static
     {
-        BERT = Bert.load(MODEL_PATH);
+        try
+        {
+            model = Word2VecModel.fromBinFile(MODEL_PATH);
+            searcher = model.forSearch();
+        }
+
+        catch (IOException e)
+        {
+            e.printStackTrace();
+            System.exit(1);
+        }
     }
 
     public static EmbeddingIndexer create(Set<Document> documents, File indexDirectory, boolean parallelized)
@@ -45,7 +57,6 @@ public class EmbeddingIndexer implements Indexer<String, List<Double>>
     {
         this.documents = documents;
         this.directory = indexDirectory;
-        this.isClosed = false;
         this.isParallelized = parallelized;
     }
 
@@ -60,17 +71,12 @@ public class EmbeddingIndexer implements Indexer<String, List<Double>>
     }
 
     /**
-     * Constructs the index of BERT embeddings of KG entities
+     * Constructs the index of Word2Vec embeddings of KG entities
      * @return True if the index was constructed successfully, otherwise false
      */
     @Override
     public boolean constructIndex()
     {
-        if (this.isClosed)
-        {
-            return false;
-        }
-
         if (this.isParallelized)
         {
             insertParallel();
@@ -81,10 +87,7 @@ public class EmbeddingIndexer implements Indexer<String, List<Double>>
             insertEntities(this.documents);
         }
 
-        this.isClosed = true;
-        BERT.close();
         IndexBuilder.embeddingBuilder(this.directory, this.index);
-
         return true;
     }
 
@@ -116,29 +119,32 @@ public class EmbeddingIndexer implements Indexer<String, List<Double>>
     {
         for (Document document : documents)
         {
-            List<Double> embedding = embedding(document.uri());
+            String text = !document.label().isEmpty() ? document.label() : document.uri().replace("_", " ");
+            List<Double> embedding = embedding(text);
 
-            synchronized (this.mtx)
+            if (embedding != null)
             {
-                this.index.add(document.uri(), embedding);
+                synchronized (this.mtx)
+                {
+                    this.index.add(document.uri(), embedding);
+                }
             }
         }
     }
 
     /**
-     * Retrieve BERT embeddings of given text
-     * Warning: This method cannot be called after constructing the index, as the BERT class is closed.
+     * Retrieve Word2Vec embeddings of given text
      */
     public static List<Double> embedding(String text)
     {
-        float[] embedding = BERT.embedSequence(text);
-        List<Double> embeddingLst = new ArrayList<>(embedding.length);
-
-        for (float e : embedding)
+        try
         {
-            embeddingLst.add((double) e);
+            return searcher.getRawVector(text);
         }
 
-        return embeddingLst;
+        catch (Searcher.UnknownWordException e)
+        {
+            return null;
+        }
     }
 }

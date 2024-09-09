@@ -3,7 +3,8 @@ Keyword-based table to knowledge graph entity linking.
 
 ## Setup
 Store all the KG files in a single directory, and make sure all the files are in N-Triples format.
-Now, the entity linker needs to be indexed using the KG files.
+Download Word2Vec embeddings from Google <a href="https://drive.google.com/file/d/0B7XkCwpI5KDYNlNUTTlSS21pQmM/edit?resourcekey=0-wjGZdNAUop6WykTtMip30g">here</a>, and store the file in a folder called `word2vec/` in the root directory of this project.
+Now, the entity linker needs to be indexed using the KG files and Word2Vec model.
 
 ```bash
 ./linker.sh -dir <DIRECTORY> -kg <KG_DIRECTORY> -config <CONFIG_FILE>
