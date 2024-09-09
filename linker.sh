@@ -5,12 +5,23 @@ set -e
 IMAGE="keyword-kg-linker"
 CONTAINER="keyword-kg-linker-container"
 WORD2VEC="word2vec/"
+WORD2VEC_MODEL="model.bin.gz"
 
 if [[ "$#" -eq 6 ]]   # Indexing
 then
   DATA_DIR=""
   KG_DIR=""
   CONFIG=""
+  mkdir -p ${WORD2VEC}
+
+  if [ ! -f ${WORD2VEC}${WORD2VEC_MODEL} ]
+  then
+    docker build -f embeddings.dockerfile -t embeddings_model .
+    docker run --rm -v ${PWD}/${WORD2VEC}:/model embeddings_model
+    docker rmi embeddings_model
+
+    gzip -d ${WORD2VEC}${WORD2VEC_MODEL}
+  fi
 
   if [[ $1 == "-dir" ]]
   then

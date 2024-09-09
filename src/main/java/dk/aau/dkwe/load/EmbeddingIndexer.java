@@ -30,7 +30,7 @@ public class EmbeddingIndexer implements Indexer<String, List<Double>>
     private final Object mtx = new Object();
     private static Word2VecModel model = null;
     private static Searcher searcher = null;
-    private static final File MODEL_PATH = new File("/word2vec/GoogleNews-vectors-negative300.bin.gz");
+    private static final File MODEL_PATH = new File("/word2vec/model.bin");
     private static final int THREADS = 4;
 
     static
@@ -120,7 +120,10 @@ public class EmbeddingIndexer implements Indexer<String, List<Double>>
         for (Document document : documents)
         {
             String text = !document.label().isEmpty() ? document.label() : document.uri();
+            long start = System.currentTimeMillis();
             List<Double> embedding = embedding(text);
+            long elapsed = System.currentTimeMillis() - start;
+            System.out.println("Elapsed: " + elapsed);
 
             if (embedding != null)
             {
