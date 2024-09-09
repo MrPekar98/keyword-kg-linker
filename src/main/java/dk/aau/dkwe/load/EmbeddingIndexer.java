@@ -119,7 +119,7 @@ public class EmbeddingIndexer implements Indexer<String, List<Double>>
     {
         for (Document document : documents)
         {
-            String text = !document.label().isEmpty() ? document.label() : document.uri().replace("_", " ");
+            String text = !document.label().isEmpty() ? document.label() : document.uri();
             List<Double> embedding = embedding(text);
 
             if (embedding != null)
@@ -139,7 +139,7 @@ public class EmbeddingIndexer implements Indexer<String, List<Double>>
     {
         try
         {
-            return searcher.getRawVector(text);
+            return searcher.getRawVector(text.replace(" ", "_"));
         }
 
         catch (Searcher.UnknownWordException e)
