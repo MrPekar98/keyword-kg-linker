@@ -16,6 +16,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /**
  * Indexing og KG entity embeddings
@@ -128,21 +130,38 @@ public class EmbeddingIndexer implements Indexer<String, List<Double>>
      */
     public static List<Double> embedding(String text)
     {
-        String input = text.replace(" ", "_");
+        String[] words = text.split(" ");
+        List<Double> aggregatedEmbedding = null;
 
-        if (!model.hasWord(input))
+        for (String word : words)
         {
-            return null;
+            if (!model.hasWord(word))
+            {
+                continue;
+            }
+
+            double[] array = model.getWordVector(word);
+            List<Double> embedding = new ArrayList<>(array.length);
+
+            for (double val : array)
+            {
+                embedding.add(val);
+            }
+
+            if (aggregatedEmbedding == null)
+            {
+                aggregatedEmbedding = embedding;
+            }
+
+            else
+            {
+                List<Double> copy = new ArrayList<>(aggregatedEmbedding);
+                aggregatedEmbedding = IntStream.range(0, embedding.size())
+                        .mapToObj(i -> copy.get(i) + embedding.get(i))
+                        .collect(Collectors.toList());
+            }
         }
 
-        double[] array = model.getWordVector(input);
-        List<Double> embedding = new ArrayList<>(array.length);
-
-        for (double val : array)
-        {
-            embedding.add(val);
-        }
-
-        return embedding;
+        return aggregatedEmbedding;
     }
 }

@@ -47,6 +47,11 @@ public class EmbeddingLinker extends MentionLinker
         double highestScore = -1.0;
         String bestEntity = null;
 
+        if (mentionEmbedding == null)
+        {
+            return null;
+        }
+
         while (entities.hasNext())
         {
             String entity = entities.next();
