@@ -5,7 +5,8 @@ set -e
 IMAGE="keyword-kg-linker"
 CONTAINER="keyword-kg-linker-container"
 WORD2VEC="word2vec/"
-WORD2VEC_MODEL="model.bin.gz"
+WORD2VEC_MODEL="model.bin"
+WORD2VEC_MODEL_COMPRESSED="model.bin.gz"
 
 if [[ "$#" -eq 6 ]]   # Indexing
 then
@@ -20,7 +21,7 @@ then
     docker run --rm -v ${PWD}/${WORD2VEC}:/model embeddings_model
     docker rmi embeddings_model
 
-    gzip -d ${WORD2VEC}${WORD2VEC_MODEL}
+    gzip -d ${WORD2VEC}${WORD2VEC_MODEL_COMPRESSED}
   fi
 
   if [[ $1 == "-dir" ]]

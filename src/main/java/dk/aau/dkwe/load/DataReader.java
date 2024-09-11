@@ -99,6 +99,7 @@ public class DataReader
             Document document = new Document(entity, labelBuilder.toString(), descriptionBuilder.toString());
             documents.add(document);
         });
+        System.out.println("\nDone reading");
 
         return documents;
     }

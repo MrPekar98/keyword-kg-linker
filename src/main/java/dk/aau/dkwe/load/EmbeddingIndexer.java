@@ -1,14 +1,13 @@
 package dk.aau.dkwe.load;
 
-import com.medallia.word2vec.Searcher;
-import com.medallia.word2vec.Word2VecModel;
 import dk.aau.dkwe.candidate.Document;
 import dk.aau.dkwe.candidate.EmbeddingIndex;
 import dk.aau.dkwe.candidate.Index;
 import dk.aau.dkwe.candidate.IndexBuilder;
+import org.deeplearning4j.models.word2vec.Word2Vec;
+import org.deeplearning4j.models.embeddings.loader.WordVectorSerializer;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -28,24 +27,13 @@ public class EmbeddingIndexer implements Indexer<String, List<Double>>
     private File directory;
     private boolean isParallelized;
     private final Object mtx = new Object();
-    private static Word2VecModel model = null;
-    private static Searcher searcher = null;
+    private static Word2Vec model = null;
     private static final File MODEL_PATH = new File("/word2vec/model.bin");
     private static final int THREADS = 4;
 
     static
     {
-        try
-        {
-            model = Word2VecModel.fromBinFile(MODEL_PATH);
-            searcher = model.forSearch();
-        }
-
-        catch (IOException e)
-        {
-            e.printStackTrace();
-            System.exit(1);
-        }
+        model = WordVectorSerializer.readWord2VecModel(MODEL_PATH);
     }
 
     public static EmbeddingIndexer create(Set<Document> documents, File indexDirectory, boolean parallelized)
@@ -140,14 +128,21 @@ public class EmbeddingIndexer implements Indexer<String, List<Double>>
      */
     public static List<Double> embedding(String text)
     {
-        try
-        {
-            return searcher.getRawVector(text.replace(" ", "_"));
-        }
+        String input = text.replace(" ", "_");
 
-        catch (Searcher.UnknownWordException e)
+        if (!model.hasWord(input))
         {
             return null;
         }
+
+        double[] array = model.getWordVector(input);
+        List<Double> embedding = new ArrayList<>(array.length);
+
+        for (double val : array)
+        {
+            embedding.add(val);
+        }
+
+        return embedding;
     }
 }
