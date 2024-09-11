@@ -110,10 +110,7 @@ public class EmbeddingIndexer implements Indexer<String, List<Double>>
         for (Document document : documents)
         {
             String text = !document.label().isEmpty() ? document.label() : document.uri();
-            long start = System.currentTimeMillis();
             List<Double> embedding = embedding(text);
-            long elapsed = System.currentTimeMillis() - start;
-            System.out.println("Elapsed: " + elapsed);
 
             if (embedding != null)
             {
