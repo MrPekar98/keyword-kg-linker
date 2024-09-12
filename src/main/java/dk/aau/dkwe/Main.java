@@ -60,16 +60,19 @@ public class Main
 
         catch (IOException e)
         {
+            e.printStackTrace();
             System.err.println("IOException: " + e.getMessage());
         }
 
         catch (RuntimeException e)
         {
+            e.printStackTrace();
             System.err.println("RuntimeException: " + e.getMessage());
         }
 
         catch (Exception e)
         {
+            e.printStackTrace();
             System.err.println("Exception: " + e.getMessage());
         }
     }
