@@ -1,6 +1,7 @@
 package dk.aau.dkwe.candidate;
 
 import java.io.*;
+import java.util.List;
 
 /**
  * Serializes embeddings index to disk or deserializes it from disk
@@ -11,7 +12,17 @@ public class EmbeddingIndexBuilder
 
     public static void write(File directory, EmbeddingIndex index)
     {
-        try (ObjectOutputStream outputStream = new ObjectOutputStream(new FileOutputStream(directory.getAbsolutePath() + "/" + FILE_NAME)))
+        write(directory, index, FILE_NAME);
+    }
+
+    public static void write(File directory, EmbeddingIndex index, int partition)
+    {
+        write(directory, index, partition + "-" + FILE_NAME);
+    }
+
+    public static void write(File directory, EmbeddingIndex index, String fileName)
+    {
+        try (ObjectOutputStream outputStream = new ObjectOutputStream(new FileOutputStream(directory.getAbsolutePath() + "/" + fileName)))
         {
             outputStream.writeObject(index);
             outputStream.flush();
@@ -39,5 +50,10 @@ public class EmbeddingIndexBuilder
         {
             throw new RuntimeException("IOException: " + e.getMessage());
         }
+    }
+
+    private static EmbeddingIndex read(File directory, int partition)
+    {
+        return read(new File(directory.getAbsolutePath() + "/" + partition + "-" + FILE_NAME));
     }
 }
