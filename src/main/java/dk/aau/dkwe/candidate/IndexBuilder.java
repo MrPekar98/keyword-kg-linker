@@ -51,6 +51,19 @@ public final class IndexBuilder
         return index;
     }
 
+    public static EmbeddingIndex embeddingBuilder(File directory, EmbeddingIndex index, int partition)
+    {
+        File folder = new File(directory.getAbsolutePath() + "/" + EMBEDDINGS_FOLDER);
+
+        if (!folder.isDirectory())
+        {
+            folder.mkdirs();
+        }
+
+        EmbeddingIndexBuilder.write(directory, index, partition);
+        return index;
+    }
+
     public static EmbeddingIndex embeddingBuilder(File directory)
     {
         File folder = new File(directory.getAbsolutePath() + "/" + EMBEDDINGS_FOLDER);

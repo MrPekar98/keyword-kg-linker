@@ -2,11 +2,12 @@ package dk.aau.dkwe;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import dk.aau.dkwe.connector.Neo4J;
+import dk.aau.dkwe.candidate.Document;
 import dk.aau.dkwe.linking.CSVEntityLinker;
 import dk.aau.dkwe.linking.EmbeddingLinker;
 import dk.aau.dkwe.linking.KeywordLinker;
 import dk.aau.dkwe.linking.MentionLinker;
+import dk.aau.dkwe.load.DataReader;
 import dk.aau.dkwe.load.EmbeddingIndexer;
 import dk.aau.dkwe.load.LuceneIndexer;
 
@@ -14,7 +15,6 @@ import java.io.*;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 public class Main
 {
@@ -60,16 +60,19 @@ public class Main
 
         catch (IOException e)
         {
+            e.printStackTrace();
             System.err.println("IOException: " + e.getMessage());
         }
 
         catch (RuntimeException e)
         {
+            e.printStackTrace();
             System.err.println("RuntimeException: " + e.getMessage());
         }
 
         catch (Exception e)
         {
+            e.printStackTrace();
             System.err.println("Exception: " + e.getMessage());
         }
     }
@@ -77,7 +80,7 @@ public class Main
     private static void index(Set<ArgParser.Parameter> parameters) throws Exception
     {
         Instant start = Instant.now();
-        File directory = null, configFile = null;
+        File directory = null, kgDirectory = null, configFile = null;
         System.out.println("Indexing...");
 
         for (ArgParser.Parameter param : parameters)
@@ -87,6 +90,11 @@ public class Main
                 configFile = new File(param.getValue());
             }
 
+            else if (param == ArgParser.Parameter.KG_DIRECTORY)
+            {
+                kgDirectory = new File(param.getValue());
+            }
+
             else
             {
                 directory = new File(param.getValue());
@@ -94,15 +102,10 @@ public class Main
         }
 
         Config config = readConfigFile(configFile);
-        String domain = config.domain();
-        Neo4J neo4J = new Neo4J();
-        Set<String> entities = neo4J
-                                .entities()
-                                .stream()
-                                .filter(entity -> entity.contains(domain))
-                                .collect(Collectors.toSet());
-        LuceneIndexer luceneIndexer = LuceneIndexer.create(entities, config, directory, true);
-        EmbeddingIndexer embeddingIndexer = EmbeddingIndexer.create(entities, directory, true);
+        DataReader reader = new DataReader(kgDirectory, config.domain().isEmpty() ? null : config.domain());
+        Set<Document> documents = reader.read(true);
+        LuceneIndexer luceneIndexer = LuceneIndexer.create(config, directory, documents);
+        EmbeddingIndexer embeddingIndexer = EmbeddingIndexer.create(documents, directory, true);
         Thread embeddingIndexingThread = new Thread(embeddingIndexer::constructIndex);
         embeddingIndexingThread.start();
 
@@ -110,12 +113,10 @@ public class Main
         {
             System.err.println("Failed constructing indexes");
             embeddingIndexingThread.interrupt();
-            neo4J.close();
             return;
         }
 
         embeddingIndexingThread.join();
-        neo4J.close();
 
         Duration duration = Duration.between(start, Instant.now());
         System.out.println("Indexing done in " + duration.toString().substring(2));
@@ -163,10 +164,10 @@ public class Main
                 csvLinker.linkTable(tables, resultDir); // 'tables' here is a single table file
             }
 
-            linker.close();
 
             Duration duration = Duration.between(start, Instant.now());
             System.out.println("Linking done in " + duration.toString().substring(2));
+            linker.close();
         }
 
         catch (Exception e)

@@ -1,9 +1,11 @@
 package dk.aau.dkwe.load;
 
-import com.robrua.nlp.bert.Bert;
+import dk.aau.dkwe.candidate.Document;
 import dk.aau.dkwe.candidate.EmbeddingIndex;
 import dk.aau.dkwe.candidate.Index;
 import dk.aau.dkwe.candidate.IndexBuilder;
+import org.deeplearning4j.models.word2vec.Word2Vec;
+import org.deeplearning4j.models.embeddings.loader.WordVectorSerializer;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -14,6 +16,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /**
  * Indexing og KG entity embeddings
@@ -21,30 +25,28 @@ import java.util.concurrent.Future;
 public class EmbeddingIndexer implements Indexer<String, List<Double>>
 {
     private final EmbeddingIndex index = new EmbeddingIndex();
-    private Set<String> entities;
+    private Set<Document> documents;
     private File directory;
-    private boolean isClosed;
     private boolean isParallelized;
     private final Object mtx = new Object();
-    private static final Bert BERT;
-    private static final String MODEL_PATH = "com/robrua/nlp/easy-bert/bert-uncased-L-12-H-768-A-12";
+    private static Word2Vec model = null;
+    private static final File MODEL_PATH = new File("/word2vec/model.bin");
     private static final int THREADS = 4;
 
     static
     {
-        BERT = Bert.load(MODEL_PATH);
+        model = WordVectorSerializer.readWord2VecModel(MODEL_PATH);
     }
 
-    public static EmbeddingIndexer create(Set<String> entities, File indexDirectory, boolean parallelized)
+    public static EmbeddingIndexer create(Set<Document> documents, File indexDirectory, boolean parallelized)
     {
-        return new EmbeddingIndexer(entities, indexDirectory, parallelized);
+        return new EmbeddingIndexer(documents, indexDirectory, parallelized);
     }
 
-    private EmbeddingIndexer(Set<String> entities, File indexDirectory, boolean parallelized)
+    private EmbeddingIndexer(Set<Document> documents, File indexDirectory, boolean parallelized)
     {
-        this.entities = entities;
+        this.documents = documents;
         this.directory = indexDirectory;
-        this.isClosed = false;
         this.isParallelized = parallelized;
     }
 
@@ -59,17 +61,12 @@ public class EmbeddingIndexer implements Indexer<String, List<Double>>
     }
 
     /**
-     * Constructs the index of BERT embeddings of KG entities
+     * Constructs the index of Word2Vec embeddings of KG entities
      * @return True if the index was constructed successfully, otherwise false
      */
     @Override
     public boolean constructIndex()
     {
-        if (this.isClosed)
-        {
-            return false;
-        }
-
         if (this.isParallelized)
         {
             insertParallel();
@@ -77,26 +74,23 @@ public class EmbeddingIndexer implements Indexer<String, List<Double>>
 
         else
         {
-            insertEntities(this.entities);
+            insertEntities(this.documents);
         }
 
-        this.isClosed = true;
-        BERT.close();
         IndexBuilder.embeddingBuilder(this.directory, this.index);
-
         return true;
     }
 
     private void insertParallel()
     {
-        List<String> entityList = new ArrayList<>(this.entities);
+        List<Document> documentList = new ArrayList<>(this.documents);
         ExecutorService threadPool = Executors.newFixedThreadPool(THREADS);
         List<Future<?>> tasks = new ArrayList<>();
-        final int entityCount = this.entities.size(), splitSize = 10000, iterations = (int) Math.ceil((double) entityCount / splitSize);
+        final int entityCount = this.documents.size(), splitSize = 10000, iterations = (int) Math.ceil((double) entityCount / splitSize);
 
         for (int i = 0; i < iterations; i++)
         {
-            List<String> subset = entityList.subList(i * splitSize, Math.min((i + 1) * splitSize, entityCount - 1));
+            List<Document> subset = documentList.subList(i * splitSize, Math.min((i + 1) * splitSize, entityCount - 1));
             Future<?> task = threadPool.submit(() -> insertEntities(new HashSet<>(subset)));
             tasks.add(task);
         }
@@ -111,33 +105,60 @@ public class EmbeddingIndexer implements Indexer<String, List<Double>>
         });
     }
 
-    private void insertEntities(Set<String> entities)
+    private void insertEntities(Set<Document> documents)
     {
-        for (String entity : entities)
+        for (Document document : documents)
         {
-            List<Double> embedding = embedding(entity);
+            String text = !document.label().isEmpty() ? document.label() : document.uri();
+            List<Double> embedding = embedding(text);
 
-            synchronized (this.mtx)
+            if (embedding != null)
             {
-                this.index.add(entity, embedding);
+                synchronized (this.mtx)
+                {
+                    this.index.add(document.uri(), embedding);
+                }
             }
         }
     }
 
     /**
-     * Retrieve BERT embeddings of given text
-     * Warning: This method cannot be called after constructing the index, as the BERT class is closed.
+     * Retrieve Word2Vec embeddings of given text
      */
     public static List<Double> embedding(String text)
     {
-        float[] embedding = BERT.embedSequence(text);
-        List<Double> embeddingLst = new ArrayList<>(embedding.length);
+        String[] words = text.split(" ");
+        List<Double> aggregatedEmbedding = null;
 
-        for (float e : embedding)
+        for (String word : words)
         {
-            embeddingLst.add((double) e);
+            if (!model.hasWord(word))
+            {
+                continue;
+            }
+
+            double[] array = model.getWordVector(word);
+            List<Double> embedding = new ArrayList<>(array.length);
+
+            for (double val : array)
+            {
+                embedding.add(val);
+            }
+
+            if (aggregatedEmbedding == null)
+            {
+                aggregatedEmbedding = embedding;
+            }
+
+            else
+            {
+                List<Double> copy = new ArrayList<>(aggregatedEmbedding);
+                aggregatedEmbedding = IntStream.range(0, embedding.size())
+                        .mapToObj(i -> copy.get(i) + embedding.get(i))
+                        .collect(Collectors.toList());
+            }
         }
 
-        return embeddingLst;
+        return aggregatedEmbedding;
     }
 }

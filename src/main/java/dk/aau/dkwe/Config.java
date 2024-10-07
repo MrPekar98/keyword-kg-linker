@@ -1,8 +1,7 @@
 package dk.aau.dkwe;
 
 import java.util.Map;
-import java.util.Set;
 
-public record Config(String domain, int candidates, Set<String> predicates, Map<String, Double> weights)
+public record Config(int candidates, String domain, Map<String, Double> weights, boolean logging)
 {
 }

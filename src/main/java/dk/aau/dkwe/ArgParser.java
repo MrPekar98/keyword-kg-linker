@@ -37,6 +37,7 @@ public final class ArgParser
     public enum Parameter
     {
         DIRECTORY("-dir"),
+        KG_DIRECTORY("-kg"),
         TABLES("-tables"),
         OUTPUT("-output"),
         CONFIG("-config"),
@@ -72,7 +73,8 @@ public final class ArgParser
                     TABLES.toString().equals(str) ? TABLES :
                             OUTPUT.toString().equals(str) ? OUTPUT :
                                     CONFIG.toString().equals(str) ? CONFIG :
-                                            TYPE.toString().equals(str) ? TYPE : null;
+                                            TYPE.toString().equals(str) ? TYPE :
+                                                    KG_DIRECTORY.toString().equals(str) ? KG_DIRECTORY : null;
         }
     }
 
@@ -132,14 +134,14 @@ public final class ArgParser
 
     private void checkIndexing()
     {
-        if (this.parameters.size() != 2)
+        if (this.parameters.size() != 3)
         {
             this.parsed = false;
-            this.parseError = "Expects two parameters when indexing";
+            this.parseError = "Expects three parameters when indexing";
         }
 
         Iterator<Parameter> parameters = this.parameters.iterator();
-        boolean hasDir = false, hasConfig = false;
+        boolean hasDir = false, hasConfig = false, hasKG = false;
 
         while (parameters.hasNext())
         {
@@ -155,6 +157,11 @@ public final class ArgParser
                 hasConfig = true;
             }
 
+            else if (parameter == Parameter.KG_DIRECTORY)
+            {
+                hasKG = true;
+            }
+
             if (parameter.getValue() == null)
             {
                 this.parsed = false;
@@ -163,10 +170,10 @@ public final class ArgParser
             }
         }
 
-        if (!(hasDir && hasConfig))
+        if (!(hasDir && hasKG && hasConfig))
         {
             this.parsed = false;
-            this.parseError = "Indexing requires parameters '-dir' and '-config'";
+            this.parseError = "Indexing requires parameters '-dir', '-kg', and '-config'";
         }
     }
 

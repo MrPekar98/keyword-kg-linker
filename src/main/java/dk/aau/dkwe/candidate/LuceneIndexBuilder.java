@@ -40,16 +40,10 @@ public final class LuceneIndexBuilder
         documents.forEach(doc -> {
             try
             {
-                StringBuilder description = new StringBuilder(), subDescription = new StringBuilder();
                 Document luceneDoc = new Document();
                 luceneDoc.add(new Field(LuceneIndex.URI_FIELD, doc.uri(), TextField.TYPE_STORED));
                 luceneDoc.add(new Field(LuceneIndex.LABEL_FIELD, doc.label(), TextField.TYPE_STORED));
-
-                doc.description().forEach(desc -> description.append(' ').append(desc));
-                doc.subDescription().forEach(subDesc -> subDescription.append(' ').append(subDesc));
-                luceneDoc.add(new Field(LuceneIndex.DESCRIPTION_FIELD, description.toString(), TextField.TYPE_STORED));
-                luceneDoc.add(new Field(LuceneIndex.SUB_DESCRIPTION_FIELD, subDescription.toString(), TextField.TYPE_STORED));
-
+                luceneDoc.add(new Field(LuceneIndex.DESCRIPTION_FIELD, doc.description(), TextField.TYPE_STORED));
                 writer.addDocument(luceneDoc);
             }
 

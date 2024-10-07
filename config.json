@@ -1,14 +1,9 @@
 {
+    "candidates": 50,
     "domain": "",
-    "predicates": [
-        "ns1__shortname",
-        "ns1__surname",
-        "ns1__alias"
-    ],
+    "logging": true,
     "weights": {
-        "LABEL": 0.6,
-        "DESCRIPTION": 0.2,
-        "SUB-DESCRIPTION": 0.2
-    },
-    "candidates": 50
+        "LABEL": 0.7,
+        "DESCRIPTION": 0.3
+    }
 }

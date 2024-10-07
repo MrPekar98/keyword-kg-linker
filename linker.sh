@@ -4,12 +4,25 @@ set -e
 
 IMAGE="keyword-kg-linker"
 CONTAINER="keyword-kg-linker-container"
-NEO4J_ADDRESS=$(docker exec neo4j-linker hostname -I)
+WORD2VEC="word2vec/"
+WORD2VEC_MODEL="model.bin"
+WORD2VEC_MODEL_COMPRESSED="model.bin.gz"
 
-if [[ "$#" -eq 4 ]]   # Indexing
+if [[ "$#" -eq 6 ]]   # Indexing
 then
   DATA_DIR=""
+  KG_DIR=""
   CONFIG=""
+  mkdir -p ${WORD2VEC}
+
+  if [ ! -f ${WORD2VEC}${WORD2VEC_MODEL} ]
+  then
+    docker build -f embeddings.dockerfile -t embeddings_model .
+    docker run --rm -v ${PWD}/${WORD2VEC}:/model embeddings_model
+    docker rmi embeddings_model
+
+    gzip -d ${WORD2VEC}${WORD2VEC_MODEL_COMPRESSED}
+  fi
 
   if [[ $1 == "-dir" ]]
   then
@@ -17,6 +30,9 @@ then
   elif [[ $1 == "-config" ]]
   then
     CONFIG=$2
+  elif [[ $1 == "-kg" ]]
+  then
+    KG_DIR=$2
   else
     echo "Option '$1' was not recognized"
     exit 1
@@ -28,14 +44,37 @@ then
   elif [[ $3 == '-config' ]]
   then
     CONFIG=$4
+  elif [[ $3 == "-kg" ]]
+  then
+    KG_DIR=$4
   else
     echo "Option '$3' was not recognized"
+    exit 1
+  fi
+
+  if [[ $5 == "-dir" ]]
+  then
+    DATA_DIR=$6
+  elif [[ $5 == "-config" ]]
+  then
+    CONFIG=$6
+  elif [[ $5 == "-kg" ]]
+  then
+    KG_DIR=$6
+  else
+    echo "Option '$5' was not recognized"
     exit 1
   fi
 
   if [[ ! -d ${DATA_DIR} ]]
   then
     echo "Directory '${DATA_DIR}' does not exist"
+    exit 1
+  fi
+
+  if [[ ! -d ${KG_DIR} ]]
+  then
+    echo "Directory '${KG_DIR}' does not exist"
     exit 1
   fi
 
@@ -46,8 +85,9 @@ then
     docker build -t ${IMAGE} . --build-arg CONFIG_FILE=${CONFIG} --no-cache
   fi
 
-  docker run --rm -v ${PWD}/${DATA_DIR}:/data -e NEO4J_IP=${NEO4J_ADDRESS} --network linker-dev --name ${CONTAINER} ${IMAGE} \
-      java -jar keywork-linker.jar index -dir /data -config ${CONFIG}
+  docker network inspect linker-dev > /dev/null 2>&1 || docker network create --driver bridge linker-dev
+  docker run --rm -v ${PWD}/${DATA_DIR}:/data -v ${PWD}/${KG_DIR}:/kg -v ${PWD}/${WORD2VEC}:/word2vec/ --network linker-dev --name ${CONTAINER} ${IMAGE} \
+      java -jar keywork-linker.jar index -dir /data -kg /kg -config ${CONFIG}
 
 elif [[ "$#" -eq 10 ]]   # Linking
 then
@@ -170,7 +210,8 @@ then
   mkdir -p ${OUTPUT}
   BASE_FILENAME=$(basename ${TABLES})
   TABLE_DIR=$(dirname $TABLES)
-  docker run --rm -v ${PWD}/${DIRECTORY}:/data -v ${PWD}/${OUTPUT}:/output -v ${PWD}/${TABLE_DIR}:/tables -e NEO4J_IP=${NEO4J_ADDRESS} --network linker-dev \
+  docker network inspect linker-dev > /dev/null 2>&1 || docker network create --driver bridge linker-dev
+  docker run --rm -v ${PWD}/${DIRECTORY}:/data -v ${PWD}/${OUTPUT}:/output -v ${PWD}/${TABLE_DIR}:/tables --network linker-dev \
       --name ${CONTAINER} ${IMAGE} java -jar keywork-linker.jar link -tables /tables/${BASE_FILENAME} -output /output -dir /data -config ${CONFIG} -type ${TYPE}
 else
   echo "Did not understand parameters"
