@@ -1,7 +1,6 @@
 package dk.aau.dkwe.candidate;
 
 import java.io.*;
-import java.util.List;
 
 /**
  * Serializes embeddings index to disk or deserializes it from disk
@@ -26,6 +25,11 @@ public class EmbeddingIndexBuilder
         {
             outputStream.writeObject(index);
             outputStream.flush();
+        }
+
+        catch (NegativeArraySizeException e)
+        {
+            throw new RuntimeException("Negative array size for when serializing embeddings index: " + e.getMessage());
         }
 
         catch (IOException e)
