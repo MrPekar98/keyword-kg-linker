@@ -160,7 +160,7 @@ public class Main
                         csvLinker.linkTable(tableFile, resultDir);
                     }
 
-                    catch (IOException ignored) {}
+                    catch (RuntimeException ignored) {}
                 }
             }
 
