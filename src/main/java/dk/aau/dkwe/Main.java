@@ -155,7 +155,12 @@ public class Main
             {
                 for (File tableFile : tables.listFiles())
                 {
-                    csvLinker.linkTable(tableFile, resultDir);
+                    try
+                    {
+                        csvLinker.linkTable(tableFile, resultDir);
+                    }
+
+                    catch (IOException ignored) {}
                 }
             }
 
