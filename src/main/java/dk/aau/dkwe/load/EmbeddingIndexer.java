@@ -52,7 +52,7 @@ public class EmbeddingIndexer implements Indexer<String, List<Double>>
 
     /**
      * Getter of the constructed embeddings index
-     * @return
+     * @return Index instance
      */
     @Override
     public Index<String, List<Double>> getIndex()
@@ -77,7 +77,6 @@ public class EmbeddingIndexer implements Indexer<String, List<Double>>
             insertEntities(this.documents);
         }
 
-        IndexBuilder.embeddingBuilder(this.directory, this.index);
         return true;
     }
 

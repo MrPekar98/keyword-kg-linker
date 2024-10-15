@@ -87,7 +87,10 @@ then
 
   JVM_SIZE=$(du -hs ${KG_DIR} | cut -f1)
   docker network inspect linker-dev > /dev/null 2>&1 || docker network create --driver bridge linker-dev
-  docker run --rm -v ${PWD}/${DATA_DIR}:/data -v ${PWD}/${KG_DIR}:/kg -v ${PWD}/${WORD2VEC}:/word2vec/ --network linker-dev --name ${CONTAINER} ${IMAGE} \
+  ./db.sh
+
+  POSTGRES_IP=$(docker exec timescaledb bash -c "hostname -I")
+  docker run --rm -e DB=${POSTGRES_IP} -v ${PWD}/${DATA_DIR}:/data -v ${PWD}/${KG_DIR}:/kg -v ${PWD}/${WORD2VEC}:/word2vec/ --network linker-dev --name ${CONTAINER} ${IMAGE} \
       java -Xmx${JVM_SIZE,,} -jar keywork-linker.jar index -dir /data -kg /kg -config ${CONFIG}
 
 elif [[ "$#" -eq 10 ]]   # Linking

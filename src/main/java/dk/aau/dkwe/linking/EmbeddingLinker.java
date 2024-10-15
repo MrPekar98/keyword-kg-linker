@@ -3,11 +3,9 @@ package dk.aau.dkwe.linking;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import dk.aau.dkwe.candidate.EmbeddingIndex;
-import dk.aau.dkwe.candidate.IndexBuilder;
 import dk.aau.dkwe.load.EmbeddingIndexer;
 import dk.aau.dkwe.utils.MathUtils;
 
-import java.io.File;
 import java.util.Iterator;
 import java.util.List;
 
@@ -19,9 +17,9 @@ public class EmbeddingLinker extends MentionLinker
     private final Cache<String, String> cache;
     private final EmbeddingIndex index;
 
-    public EmbeddingLinker(File indexDir)
+    public EmbeddingLinker()
     {
-        this.index = IndexBuilder.embeddingBuilder(indexDir);
+        this.index = new EmbeddingIndex();
         this.cache = CacheBuilder.newBuilder()
                 .maximumSize(10000)
                 .build();

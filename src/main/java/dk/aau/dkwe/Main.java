@@ -145,7 +145,7 @@ public class Main
             Config config = readConfigFile(configFile);
             MentionLinker linker = switch (linkerType) {
                 case "keyword" -> new KeywordLinker(indexDir, config.weights(), config.candidates());
-                case "embedding" -> new EmbeddingLinker(indexDir);
+                case "embedding" -> new EmbeddingLinker();
                 default -> throw new IllegalArgumentException("Argument for '" + linkerType + "' was not recognized");
             };
             CSVEntityLinker csvLinker = new CSVEntityLinker(linker);
