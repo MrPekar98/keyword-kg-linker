@@ -62,16 +62,50 @@ public class EmbeddingIndex implements Index<String, List<Double>>, Closeable
             stmt.setString(1, key);
 
             ResultSet rs = stmt.executeQuery();
-            PGvector vector = (PGvector) rs.getObject(1);
-            float[] primitiveEmbedding = vector.toArray();
-            List<Double> embedding = new ArrayList<>(primitiveEmbedding.length);
 
-            for (float f : primitiveEmbedding)
+            if (rs.next())
             {
-                embedding.add((double) f);
+                PGvector vector = (PGvector) rs.getObject(1);
+                float[] primitiveEmbedding = vector.toArray();
+                List<Double> embedding = new ArrayList<>(primitiveEmbedding.length);
+
+                for (float f : primitiveEmbedding)
+                {
+                    embedding.add((double) f);
+                }
+
+                return embedding;
             }
 
-            return embedding;
+            return Collections.emptyList();
+        }
+
+        catch (SQLException e)
+        {
+            e.printStackTrace();
+            return Collections.emptyList();
+        }
+    }
+
+    public List<EntityEmbedding> neighbors(List<Double> embeddingKey, int numNeighbors)
+    {
+        StringBuilder builder = new StringBuilder("SELECT uri, embedding FROM " + TABLE + " ORDER BY embedding <=> [");
+        embeddingKey.forEach(val -> builder.append(val).append(","));
+        builder.deleteCharAt(builder.length() - 1).append("] LIMIT ").append(numNeighbors);
+
+        try (PreparedStatement stmt = this.conn.prepareStatement(builder.toString()))
+        {
+            ResultSet rs = stmt.executeQuery();
+            List<EntityEmbedding> neighbors = new ArrayList<>(numNeighbors);
+
+            while (rs.next())
+            {
+                String uri = rs.getString(1);
+                PGvector vector = (PGvector) rs.getObject(2);
+                neighbors.add(new EntityEmbedding(uri, fromPrimitive(vector.toArray())));
+            }
+
+            return neighbors;
         }
 
         catch (SQLException e)
@@ -182,6 +216,18 @@ public class EmbeddingIndex implements Index<String, List<Double>>, Closeable
         }
 
         return result;
+    }
+
+    private static List<Double> fromPrimitive(float[] primitiveEmbedding)
+    {
+        List<Double> embedding = new ArrayList<>(primitiveEmbedding.length);
+
+        for (float val : primitiveEmbedding)
+        {
+            embedding.add((double) val);
+        }
+
+        return embedding;
     }
 
     @Override

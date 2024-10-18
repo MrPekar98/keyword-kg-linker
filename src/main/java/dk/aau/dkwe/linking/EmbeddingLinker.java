@@ -3,8 +3,8 @@ package dk.aau.dkwe.linking;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import dk.aau.dkwe.candidate.EmbeddingIndex;
+import dk.aau.dkwe.candidate.EntityEmbedding;
 import dk.aau.dkwe.load.EmbeddingIndexer;
-import dk.aau.dkwe.utils.MathUtils;
 
 import java.util.Iterator;
 import java.util.List;
@@ -41,29 +41,20 @@ public class EmbeddingLinker extends MentionLinker
         }
 
         List<Double> mentionEmbedding = EmbeddingIndexer.embedding(mention);
-        Iterator<String> entities = this.index.keys();
+        EntityEmbedding mentionEntity = new EntityEmbedding(mention, mentionEmbedding);
+        Iterator<EntityEmbedding> neighbors = this.index.neighbors(mentionEmbedding, 10).iterator();
         double highestScore = -1.0;
         String bestEntity = null;
 
-        if (mentionEmbedding == null)
+        while (neighbors.hasNext())
         {
-            return null;
-        }
+            EntityEmbedding embedding = neighbors.next();
+            double score = mentionEntity.cosine(embedding);
 
-        while (entities.hasNext())
-        {
-            String entity = entities.next();
-            List<Double> embedding = this.index.lookup(entity);
-
-            if (embedding != null)
+            if (score > highestScore)
             {
-                double score = MathUtils.cosine(mentionEmbedding, embedding);
-
-                if (score > highestScore)
-                {
-                    highestScore = score;
-                    bestEntity = entity;
-                }
+                highestScore = score;
+                bestEntity = embedding.uri();
             }
         }
 
