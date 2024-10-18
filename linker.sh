@@ -218,7 +218,7 @@ then
   TABLE_DIR=$(dirname $TABLES)
   JVM_SIZE=$(du -hs ${DIRECTORY} | cut -f1)
   POSTGRES_IP=$(docker exec timescaledb bash -c "hostname -I")
-  docker run --rm -e DB=${POSTGRES_IP} -v ${PWD}/${DIRECTORY}:/data -v ${PWD}/${OUTPUT}:/output -v ${PWD}/${TABLE_DIR}:/tables --network linker-dev \
+  docker run --rm -e DB=${POSTGRES_IP} -v ${PWD}/${DIRECTORY}:/data -v ${PWD}/${OUTPUT}:/output -v ${PWD}/${TABLE_DIR}:/tables -v ${PWD}/${WORD2VEC}:/word2vec/ --network linker-dev \
       --name ${CONTAINER} ${IMAGE} java -Xmx${JVM_SIZE,,} -jar keywork-linker.jar link -tables /tables/${BASE_FILENAME} -output /output -dir /data -config ${CONFIG} -type ${TYPE}
 else
   echo "Did not understand parameters"
