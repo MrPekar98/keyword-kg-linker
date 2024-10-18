@@ -51,6 +51,11 @@ public class CSVEntityLinker
             File outputFile = new File(outputDirectory.getAbsolutePath() + "/" + tableFile.getName());
             flushLinks(output, outputFile);
         }
+
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
     }
 
     private static void flushLinks(List<List<String>> links, File outputFile) throws IOException

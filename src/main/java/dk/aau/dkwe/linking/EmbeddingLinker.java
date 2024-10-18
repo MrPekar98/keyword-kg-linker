@@ -41,6 +41,12 @@ public class EmbeddingLinker extends MentionLinker
         }
 
         List<Double> mentionEmbedding = EmbeddingIndexer.embedding(mention);
+
+        if (mentionEmbedding == null)
+        {
+            return null;
+        }
+
         EntityEmbedding mentionEntity = new EntityEmbedding(mention, mentionEmbedding);
         Iterator<EntityEmbedding> neighbors = this.index.neighbors(mentionEmbedding, 10).iterator();
         double highestScore = -1.0;

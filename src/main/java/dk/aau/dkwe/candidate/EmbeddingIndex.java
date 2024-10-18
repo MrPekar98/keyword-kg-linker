@@ -89,9 +89,9 @@ public class EmbeddingIndex implements Index<String, List<Double>>, Closeable
 
     public List<EntityEmbedding> neighbors(List<Double> embeddingKey, int numNeighbors)
     {
-        StringBuilder builder = new StringBuilder("SELECT uri, embedding FROM " + TABLE + " ORDER BY embedding <=> [");
+        StringBuilder builder = new StringBuilder("SELECT uri, embedding FROM " + TABLE + " ORDER BY embedding <=> '[");
         embeddingKey.forEach(val -> builder.append(val).append(","));
-        builder.deleteCharAt(builder.length() - 1).append("] LIMIT ").append(numNeighbors);
+        builder.deleteCharAt(builder.length() - 1).append("]' LIMIT ").append(numNeighbors);
 
         try (PreparedStatement stmt = this.conn.prepareStatement(builder.toString()))
         {
@@ -132,9 +132,6 @@ public class EmbeddingIndex implements Index<String, List<Double>>, Closeable
 
         catch (SQLException e)
         {
-            System.err.println("Statement: " + statement);
-            System.err.println("Key: " + key);
-            System.err.println("Embedding dimension: " + embedding.size());
             e.printStackTrace();
 
             return false;
@@ -155,7 +152,6 @@ public class EmbeddingIndex implements Index<String, List<Double>>, Closeable
 
         catch (SQLException e)
         {
-            System.err.println("Statement: " + statement);
             e.printStackTrace();
 
             return false;
