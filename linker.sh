@@ -212,11 +212,13 @@ then
   fi
 
   mkdir -p ${OUTPUT}
+  docker network inspect linker-dev > /dev/null 2>&1 || docker network create --driver bridge linker-dev
+
   BASE_FILENAME=$(basename ${TABLES})
   TABLE_DIR=$(dirname $TABLES)
   JVM_SIZE=$(du -hs ${DIRECTORY} | cut -f1)
-  docker network inspect linker-dev > /dev/null 2>&1 || docker network create --driver bridge linker-dev
-  docker run --rm -v ${PWD}/${DIRECTORY}:/data -v ${PWD}/${OUTPUT}:/output -v ${PWD}/${TABLE_DIR}:/tables --network linker-dev \
+  POSTGRES_IP=$(docker exec timescaledb bash -c "hostname -I")
+  docker run --rm -e DB=${POSTGRES_IP} -v ${PWD}/${DIRECTORY}:/data -v ${PWD}/${OUTPUT}:/output -v ${PWD}/${TABLE_DIR}:/tables --network linker-dev \
       --name ${CONTAINER} ${IMAGE} java -Xmx${JVM_SIZE,,} -jar keywork-linker.jar link -tables /tables/${BASE_FILENAME} -output /output -dir /data -config ${CONFIG} -type ${TYPE}
 else
   echo "Did not understand parameters"
