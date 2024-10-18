@@ -76,5 +76,8 @@ public class EmbeddingLinker extends MentionLinker
     }
 
     @Override
-    public void close() throws Exception {}
+    public void close()
+    {
+        this.index.close();
+    }
 }

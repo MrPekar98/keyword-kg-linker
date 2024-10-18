@@ -126,6 +126,7 @@ public class Main
     {
         File resultDir = null, tables = null, indexDir = null, configFile = null;
         String linkerType = null;
+        MentionLinker linker = null;
         System.out.println("Linking...");
 
         for (ArgParser.Parameter param : parameters)
@@ -143,7 +144,7 @@ public class Main
         try
         {
             Config config = readConfigFile(configFile);
-            MentionLinker linker = switch (linkerType) {
+            linker = switch (linkerType) {
                 case "keyword" -> new KeywordLinker(indexDir, config.weights(), config.candidates());
                 case "embedding" -> new EmbeddingLinker();
                 default -> throw new IllegalArgumentException("Argument for '" + linkerType + "' was not recognized");
@@ -178,6 +179,16 @@ public class Main
         catch (Exception e)
         {
             System.err.println("Exception: " + e.getMessage());
+
+            if (linker != null)
+            {
+                try
+                {
+                    linker.close();
+                }
+
+                catch (IOException ignored) {}
+            }
         }
     }
 

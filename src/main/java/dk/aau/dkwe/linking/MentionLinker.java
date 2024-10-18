@@ -1,6 +1,8 @@
 package dk.aau.dkwe.linking;
 
-public abstract class MentionLinker implements EntityLinker<String, String>, AutoCloseable
+import java.io.Closeable;
+
+public abstract class MentionLinker implements EntityLinker<String, String>, Closeable
 {
     @Override
     public String link(String mention)

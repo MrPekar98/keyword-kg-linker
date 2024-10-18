@@ -29,6 +29,7 @@ public class EmbeddingIndexer implements Indexer<String, List<Double>>
     private File directory;
     private boolean isParallelized;
     private final Object mtx = new Object();
+    private boolean isClosed = false;
     private static Word2Vec model = null;
     private static final File MODEL_PATH = new File("/word2vec/model.bin");
     private static final int THREADS = 4;
@@ -67,6 +68,11 @@ public class EmbeddingIndexer implements Indexer<String, List<Double>>
     @Override
     public boolean constructIndex()
     {
+        if (this.isClosed)
+        {
+            throw new IllegalStateException("Embeddings index has been closed");
+        }
+
         if (this.isParallelized)
         {
             insertParallel();
@@ -76,6 +82,9 @@ public class EmbeddingIndexer implements Indexer<String, List<Double>>
         {
             insertEntities(this.documents);
         }
+
+        this.index.close();
+        this.isClosed = true;
 
         return true;
     }

@@ -60,5 +60,5 @@ public class KeywordLinker extends MentionLinker
     }
 
     @Override
-    public void close() throws Exception {}
+    public void close() {}
 }

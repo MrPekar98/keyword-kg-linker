@@ -2,6 +2,7 @@ package dk.aau.dkwe.candidate;
 
 import com.pgvector.PGvector;
 
+import java.io.Closeable;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -11,7 +12,7 @@ import java.util.List;
 /**
  * Simple hash index of KG embeddings
  */
-public class EmbeddingIndex implements Index<String, List<Double>>
+public class EmbeddingIndex implements Index<String, List<Double>>, Closeable
 {
     private Connection conn;
     private static final String USER = "postgres";
@@ -181,5 +182,16 @@ public class EmbeddingIndex implements Index<String, List<Double>>
         }
 
         return result;
+    }
+
+    @Override
+    public void close()
+    {
+        try
+        {
+            this.conn.close();
+        }
+
+        catch (SQLException ignored) {}
     }
 }
