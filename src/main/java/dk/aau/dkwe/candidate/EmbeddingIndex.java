@@ -55,7 +55,7 @@ public class EmbeddingIndex implements Index<String, List<Double>>, Closeable
     @Override
     public List<Double> lookup(String key)
     {
-        String statement = "SELECT embedding FROM " + TABLE + " WHERE " + key + " = ?";
+        String statement = "SELECT embedding FROM " + TABLE + " WHERE uri = ?";
 
         try (PreparedStatement stmt = this.conn.prepareStatement(statement))
         {
