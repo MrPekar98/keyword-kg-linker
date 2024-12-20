@@ -26,7 +26,6 @@ public class EmbeddingIndexer implements Indexer<String, List<Double>>
 {
     private final EmbeddingIndex index = new EmbeddingIndex();
     private Set<Document> documents;
-    private File directory;
     private boolean isParallelized;
     private final Object mtx = new Object();
     private boolean isClosed = false;
@@ -39,15 +38,14 @@ public class EmbeddingIndexer implements Indexer<String, List<Double>>
         model = WordVectorSerializer.readWord2VecModel(MODEL_PATH);
     }
 
-    public static EmbeddingIndexer create(Set<Document> documents, File indexDirectory, boolean parallelized)
+    public static EmbeddingIndexer create(Set<Document> documents, boolean parallelized)
     {
-        return new EmbeddingIndexer(documents, indexDirectory, parallelized);
+        return new EmbeddingIndexer(documents, parallelized);
     }
 
-    private EmbeddingIndexer(Set<Document> documents, File indexDirectory, boolean parallelized)
+    private EmbeddingIndexer(Set<Document> documents, boolean parallelized)
     {
         this.documents = documents;
-        this.directory = indexDirectory;
         this.isParallelized = parallelized;
     }
 
@@ -117,7 +115,8 @@ public class EmbeddingIndexer implements Indexer<String, List<Double>>
     {
         for (Document document : documents)
         {
-            String text = !document.label().isEmpty() ? document.label() : document.uri();
+            String text = !document.label().isEmpty() ? document.label() :
+                    document.uri().substring(document.uri().lastIndexOf('/') + 1);
             List<Double> embedding = embedding(text);
 
             if (embedding != null)

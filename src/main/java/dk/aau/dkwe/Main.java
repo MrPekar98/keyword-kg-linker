@@ -105,7 +105,7 @@ public class Main
         DataReader reader = new DataReader(kgDirectory, config.domain().isEmpty() ? null : config.domain());
         Set<Document> documents = reader.read(true);
         LuceneIndexer luceneIndexer = LuceneIndexer.create(config, directory, documents);
-        EmbeddingIndexer embeddingIndexer = EmbeddingIndexer.create(documents, directory, true);
+        EmbeddingIndexer embeddingIndexer = EmbeddingIndexer.create(documents, true);
         Thread embeddingIndexingThread = new Thread(embeddingIndexer::constructIndex);
         embeddingIndexingThread.start();
 
