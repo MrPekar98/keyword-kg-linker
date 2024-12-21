@@ -118,6 +118,13 @@ public class Main
                 System.out.println("| Lucene indexing progress: " + (luceneIndexer.progress() * 100) + "%");
                 System.out.println("| Embeddings indexing progress: " + (embeddingIndexer.progress() * 100) + "%");
                 System.out.println("|___________________________________________________________________");
+
+                try
+                {
+                    Thread.sleep(10 * 1000);
+                }
+
+                catch (InterruptedException ignored) {}
             }
         });
         progressWatcher.start();
