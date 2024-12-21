@@ -4,25 +4,12 @@ set -e
 
 IMAGE="keyword-kg-linker"
 CONTAINER="keyword-kg-linker-container"
-WORD2VEC="word2vec/"
-WORD2VEC_MODEL="model.bin"
-WORD2VEC_MODEL_COMPRESSED="model.bin.gz"
 
 if [[ "$#" -eq 6 ]]   # Indexing
 then
   DATA_DIR=""
   KG_DIR=""
   CONFIG=""
-  mkdir -p ${WORD2VEC}
-
-  if [ ! -f ${WORD2VEC}${WORD2VEC_MODEL} ]
-  then
-    docker build -f embeddings.dockerfile -t embeddings_model .
-    docker run --rm -v ${PWD}/${WORD2VEC}:/model embeddings_model
-    docker rmi embeddings_model
-
-    gzip -d ${WORD2VEC}${WORD2VEC_MODEL_COMPRESSED}
-  fi
 
   if [[ $1 == "-dir" ]]
   then
@@ -90,7 +77,7 @@ then
   ./db.sh
 
   POSTGRES_IP=$(docker exec timescaledb bash -c "hostname -I")
-  docker run --rm -e DB=${POSTGRES_IP} -v ${PWD}/${DATA_DIR}:/data -v ${PWD}/${KG_DIR}:/kg -v ${PWD}/${WORD2VEC}:/word2vec/ --network linker-dev --name ${CONTAINER} ${IMAGE} \
+  docker run --rm -e DB=${POSTGRES_IP} -v ${PWD}/${DATA_DIR}:/data -v ${PWD}/${KG_DIR}:/kg --network linker-dev --name ${CONTAINER} ${IMAGE} \
       java -Xmx${JVM_SIZE,,} -jar keywork-linker.jar index -dir /data -kg /kg -config ${CONFIG}
 
 elif [[ "$#" -eq 10 ]]   # Linking
@@ -218,7 +205,7 @@ then
   TABLE_DIR=$(dirname $TABLES)
   JVM_SIZE=$(du -hs ${DIRECTORY} | cut -f1)
   POSTGRES_IP=$(docker exec timescaledb bash -c "hostname -I")
-  docker run --rm -e DB=${POSTGRES_IP} -v ${PWD}/${DIRECTORY}:/data -v ${PWD}/${OUTPUT}:/output -v ${PWD}/${TABLE_DIR}:/tables -v ${PWD}/${WORD2VEC}:/word2vec/ --network linker-dev \
+  docker run --rm -e DB=${POSTGRES_IP} -v ${PWD}/${DIRECTORY}:/data -v ${PWD}/${OUTPUT}:/output -v ${PWD}/${TABLE_DIR}:/tables --network linker-dev \
       --name ${CONTAINER} ${IMAGE} java -Xmx${JVM_SIZE,,} -jar keywork-linker.jar link -tables /tables/${BASE_FILENAME} -output /output -dir /data -config ${CONFIG} -type ${TYPE}
 else
   echo "Did not understand parameters"

@@ -12,11 +12,12 @@ import java.util.*;
 /**
  * Indexes KG entities using 4 fields: entity URI, label, set of string literals, and label and string literals of direct KG neighbors
  */
-public class LuceneIndexer implements Indexer<String, Map<String, Double>>
+public class LuceneIndexer implements Indexer<String, Map<String, Double>>, Progressable
 {
     private final File directory;
     private final Set<Document> documents;
     private final Config config;
+    private double progress = 0.0;
 
     public static LuceneIndexer create(Config config, File indexDirectory, Set<Document> documents)
     {
@@ -59,6 +60,7 @@ public class LuceneIndexer implements Indexer<String, Map<String, Double>>
         try
         {
             IndexBuilder.luceneBuilder(this.documents, this.directory);
+            this.progress = 1.0;
             return true;
         }
 
@@ -66,5 +68,11 @@ public class LuceneIndexer implements Indexer<String, Map<String, Double>>
         {
             return false;
         }
+    }
+
+    @Override
+    public double progress()
+    {
+        return this.progress;
     }
 }
