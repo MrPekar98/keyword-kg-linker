@@ -4,6 +4,7 @@ import dk.aau.dkwe.Config;
 import dk.aau.dkwe.candidate.Document;
 import dk.aau.dkwe.candidate.Index;
 import dk.aau.dkwe.candidate.IndexBuilder;
+import dk.aau.dkwe.candidate.LuceneIndexBuilder;
 
 import java.io.File;
 import java.io.IOException;
@@ -12,7 +13,7 @@ import java.util.*;
 /**
  * Indexes KG entities using 4 fields: entity URI, label, set of string literals, and label and string literals of direct KG neighbors
  */
-public class LuceneIndexer implements Indexer<String, Map<String, Double>>
+public class LuceneIndexer implements Indexer<String, Map<String, Double>>, Progressable
 {
     private final File directory;
     private final Set<Document> documents;
@@ -66,5 +67,11 @@ public class LuceneIndexer implements Indexer<String, Map<String, Double>>
         {
             return false;
         }
+    }
+
+    @Override
+    public double progress()
+    {
+        return (double) LuceneIndexBuilder.insertCount() / this.documents.size();
     }
 }

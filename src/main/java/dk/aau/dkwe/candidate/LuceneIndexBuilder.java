@@ -19,6 +19,13 @@ import java.util.Set;
  */
 public final class LuceneIndexBuilder
 {
+    private static int insertCount = 0;
+
+    public static int insertCount()
+    {
+        return insertCount;
+    }
+
     public static void build(Set<dk.aau.dkwe.candidate.Document> documents, File directory) throws IOException
     {
         if (directory.listFiles() != null && directory.listFiles().length > 0)
@@ -45,6 +52,7 @@ public final class LuceneIndexBuilder
                 luceneDoc.add(new Field(LuceneIndex.LABEL_FIELD, doc.label(), TextField.TYPE_STORED));
                 luceneDoc.add(new Field(LuceneIndex.DESCRIPTION_FIELD, doc.description(), TextField.TYPE_STORED));
                 writer.addDocument(luceneDoc);
+                insertCount++;
             }
 
             catch (IOException ignored) {}

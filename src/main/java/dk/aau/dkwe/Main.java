@@ -15,6 +15,9 @@ import java.io.*;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 public class Main
 {
@@ -106,20 +109,43 @@ public class Main
         Set<Document> documents = reader.read(true);
         LuceneIndexer luceneIndexer = LuceneIndexer.create(config, directory, documents);
         EmbeddingIndexer embeddingIndexer = EmbeddingIndexer.create(documents, true);
-        Thread embeddingIndexingThread = new Thread(embeddingIndexer::constructIndex);
-        embeddingIndexingThread.start();
+        ExecutorService executor = Executors.newFixedThreadPool(2);
+        Future<Boolean> luceneIndexerFuture = executor.submit(luceneIndexer::constructIndex);
+        Future<Boolean> embeddingsIndexerFuture = executor.submit(embeddingIndexer::constructIndex);
+        Thread progressWatcher = new Thread(() -> {
+            while (luceneIndexer.progress() < 1.0 && embeddingIndexer.progress() < 1.0)
+            {
+                System.out.println("| Lucene indexing progress: " + (luceneIndexer.progress() * 100) + "%");
+                System.out.println("| Embeddings indexing progress: " + (embeddingIndexer.progress() * 100) + "%");
+                System.out.println("|___________________________________________________________________");
 
-        if (!luceneIndexer.constructIndex())
+                try
+                {
+                    Thread.sleep(10 * 1000);
+                }
+
+                catch (InterruptedException ignored) {}
+            }
+        });
+        progressWatcher.start();
+
+        if (!luceneIndexerFuture.get())
         {
-            System.err.println("Failed constructing indexes");
-            embeddingIndexingThread.interrupt();
-            return;
+            System.err.println("Failed constructing Lucene indexes");
+            embeddingsIndexerFuture.cancel(true);
         }
 
-        embeddingIndexingThread.join();
+        else if (!embeddingsIndexerFuture.get())
+        {
+            System.err.println("Failed constructing embeddings indexes");
+            luceneIndexerFuture.cancel(true);
+        }
 
-        Duration duration = Duration.between(start, Instant.now());
-        System.out.println("Indexing done in " + duration.toString().substring(2));
+        else
+        {
+            Duration duration = Duration.between(start, Instant.now());
+            System.out.println("Indexing done in " + duration.toString().substring(2));
+        }
     }
 
     private static void link(Set<ArgParser.Parameter> parameters)

@@ -3,7 +3,6 @@ package dk.aau.dkwe.load;
 import dk.aau.dkwe.candidate.Document;
 import dk.aau.dkwe.candidate.EmbeddingIndex;
 import dk.aau.dkwe.candidate.Index;
-import dk.aau.dkwe.candidate.IndexBuilder;
 import org.deeplearning4j.models.word2vec.Word2Vec;
 import org.deeplearning4j.models.embeddings.loader.WordVectorSerializer;
 
@@ -22,13 +21,14 @@ import java.util.stream.IntStream;
 /**
  * Indexing og KG entity embeddings
  */
-public class EmbeddingIndexer implements Indexer<String, List<Double>>
+public class EmbeddingIndexer implements Indexer<String, List<Double>>, Progressable
 {
     private final EmbeddingIndex index = new EmbeddingIndex();
     private Set<Document> documents;
     private boolean isParallelized;
     private final Object mtx = new Object();
     private boolean isClosed = false;
+    private double progress = 0.0;
     private static Word2Vec model = null;
     private static final File MODEL_PATH = new File("/word2vec/model.bin");
     private static final int THREADS = 4;
@@ -124,6 +124,7 @@ public class EmbeddingIndexer implements Indexer<String, List<Double>>
                 synchronized (this.mtx)
                 {
                     this.index.add(document.uri(), embedding);
+                    this.progress += (double) 1 / this.documents.size();
                 }
             }
         }
@@ -167,5 +168,14 @@ public class EmbeddingIndexer implements Indexer<String, List<Double>>
         }
 
         return aggregatedEmbedding;
+    }
+
+    @Override
+    public double progress()
+    {
+        synchronized (this.mtx)
+        {
+            return this.progress;
+        }
     }
 }
