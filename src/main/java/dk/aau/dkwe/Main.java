@@ -144,8 +144,10 @@ public class Main
         else
         {
             Duration duration = Duration.between(start, Instant.now());
-            System.out.println("Indexing done in " + duration.toString().substring(2));
+            System.out.println("Indexing done in " + duration.toString().substring(2).toLowerCase());
         }
+
+        progressWatcher.interrupt();
     }
 
     private static void link(Set<ArgParser.Parameter> parameters)
