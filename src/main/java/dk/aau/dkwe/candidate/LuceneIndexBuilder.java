@@ -19,6 +19,8 @@ import java.util.Set;
  */
 public final class LuceneIndexBuilder
 {
+    private static double progress = 0.0;
+
     public static void build(Set<dk.aau.dkwe.candidate.Document> documents, File directory) throws IOException
     {
         if (directory.listFiles() != null && directory.listFiles().length > 0)
@@ -45,9 +47,15 @@ public final class LuceneIndexBuilder
                 luceneDoc.add(new Field(LuceneIndex.LABEL_FIELD, doc.label(), TextField.TYPE_STORED));
                 luceneDoc.add(new Field(LuceneIndex.DESCRIPTION_FIELD, doc.description(), TextField.TYPE_STORED));
                 writer.addDocument(luceneDoc);
+                progress += (double) 1 / documents.size();
             }
 
             catch (IOException ignored) {}
         });
+    }
+
+    public static double progress()
+    {
+        return progress;
     }
 }

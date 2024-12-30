@@ -4,6 +4,7 @@ import dk.aau.dkwe.Config;
 import dk.aau.dkwe.candidate.Document;
 import dk.aau.dkwe.candidate.Index;
 import dk.aau.dkwe.candidate.IndexBuilder;
+import dk.aau.dkwe.candidate.LuceneIndexBuilder;
 
 import java.io.File;
 import java.io.IOException;
@@ -17,7 +18,6 @@ public class LuceneIndexer implements Indexer<String, Map<String, Double>>, Prog
     private final File directory;
     private final Set<Document> documents;
     private final Config config;
-    private double progress = 0.0;
 
     public static LuceneIndexer create(Config config, File indexDirectory, Set<Document> documents)
     {
@@ -60,7 +60,6 @@ public class LuceneIndexer implements Indexer<String, Map<String, Double>>, Prog
         try
         {
             IndexBuilder.luceneBuilder(this.documents, this.directory);
-            this.progress = 1.0;
             return true;
         }
 
@@ -73,6 +72,6 @@ public class LuceneIndexer implements Indexer<String, Map<String, Double>>, Prog
     @Override
     public double progress()
     {
-        return this.progress;
+        return LuceneIndexBuilder.progress();
     }
 }
