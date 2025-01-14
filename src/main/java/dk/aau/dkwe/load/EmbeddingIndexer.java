@@ -120,8 +120,9 @@ public class EmbeddingIndexer implements Indexer<String, List<Double>>, Progress
         {
             for (Document document : documents)
             {
-                String text = !document.label().isEmpty() ? document.label() :
-                        document.uri().substring(document.uri().lastIndexOf('/') + 1);
+                String text = "This is the official page for ";
+                text += !document.label().isEmpty() ? document.label() :
+                        document.uri().substring(document.uri().lastIndexOf('/') + 1).replace("_", " ");
                 writer.write(text);
                 writer.newLine();
             }
