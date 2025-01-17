@@ -113,7 +113,7 @@ public class Main
         Future<Boolean> luceneIndexerFuture = executor.submit(luceneIndexer::constructIndex);
         Future<Boolean> embeddingsIndexerFuture = executor.submit(embeddingIndexer::constructIndex);
         Thread progressWatcher = new Thread(() -> {
-            while (luceneIndexer.progress() < 1.0 && embeddingIndexer.progress() < 1.0)
+            while (luceneIndexer.progress() < 1.0 || embeddingIndexer.progress() < 1.0)
             {
                 System.out.println("| Lucene indexing progress: " + (luceneIndexer.progress() * 100) + "%");
                 System.out.println("| Embeddings indexing progress: " + (embeddingIndexer.progress() * 100) + "%");
