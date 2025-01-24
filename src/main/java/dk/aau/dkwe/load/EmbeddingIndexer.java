@@ -120,7 +120,7 @@ public class EmbeddingIndexer implements Indexer<String, List<Double>>, Progress
         {
             for (Document document : documents)
             {
-                String text = "This is the official page for ";
+                String text = "The graph model contains an entity describing ";
                 text += !document.label().isEmpty() ? document.label() :
                         document.uri().substring(document.uri().lastIndexOf('/') + 1).replace("_", " ");
                 writer.write(text);
