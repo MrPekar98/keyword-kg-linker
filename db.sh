@@ -7,7 +7,7 @@ PASSWORD=1234
 DB_NAME=postgres
 IMAGE="timescale/timescaledb-ha:pg16"
 CONTAINER="timescaledb"
-VECTOR_DIMENSION=300
+VECTOR_DIMENSION=384
 
 if [[ "$(docker images -q ${IMAGE})" == "" ]]
 then

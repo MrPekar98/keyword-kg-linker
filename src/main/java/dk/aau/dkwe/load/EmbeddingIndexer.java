@@ -3,20 +3,11 @@ package dk.aau.dkwe.load;
 import dk.aau.dkwe.candidate.Document;
 import dk.aau.dkwe.candidate.EmbeddingIndex;
 import dk.aau.dkwe.candidate.Index;
-import org.deeplearning4j.models.word2vec.Word2Vec;
-import org.deeplearning4j.models.embeddings.loader.WordVectorSerializer;
 
-import java.io.File;
+import java.io.*;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 /**
  * Indexing og KG entity embeddings
@@ -25,28 +16,21 @@ public class EmbeddingIndexer implements Indexer<String, List<Double>>, Progress
 {
     private final EmbeddingIndex index = new EmbeddingIndex();
     private Set<Document> documents;
-    private boolean isParallelized;
     private final Object mtx = new Object();
     private boolean isClosed = false;
     private double progress = 0.0;
-    private static Word2Vec model = null;
-    private static final File MODEL_PATH = new File("/word2vec/model.bin");
-    private static final int THREADS = 4;
+    private final int BATCH_SIZE = 1000;
+    private static final String SENTENCE_FILE = "/home/sentences.txt";
+    private static final String EMBEDDINGS_FILE = "/home/embeddings.txt";
 
-    static
+    public static EmbeddingIndexer create(Set<Document> documents)
     {
-        model = WordVectorSerializer.readWord2VecModel(MODEL_PATH);
+        return new EmbeddingIndexer(documents);
     }
 
-    public static EmbeddingIndexer create(Set<Document> documents, boolean parallelized)
-    {
-        return new EmbeddingIndexer(documents, parallelized);
-    }
-
-    private EmbeddingIndexer(Set<Document> documents, boolean parallelized)
+    private EmbeddingIndexer(Set<Document> documents)
     {
         this.documents = documents;
-        this.isParallelized = parallelized;
     }
 
     /**
@@ -66,68 +50,133 @@ public class EmbeddingIndexer implements Indexer<String, List<Double>>, Progress
     @Override
     public boolean constructIndex()
     {
-        if (this.isClosed)
+        try
         {
-            throw new IllegalStateException("Embeddings index has been closed");
+            return insertEntities();
         }
 
-        if (this.isParallelized)
+        catch (Exception e)
         {
-            insertParallel();
+            return false;
         }
 
-        else
+        finally
         {
-            insertEntities(this.documents);
+            this.index.close();
+            this.isClosed = true;
         }
+    }
 
-        this.index.close();
-        this.isClosed = true;
+    private boolean insertEntities()
+    {
+        List<Document> documentList = new ArrayList<>(this.documents);
+        int entities = this.documents.size();
+        int iterations = (int) Math.ceil((double) entities / BATCH_SIZE);
+
+        for (int i = 0; i < iterations; i++)
+        {
+            List<Document> batch = documentList.subList(i * BATCH_SIZE, Math.min((i + 1) * BATCH_SIZE, entities - 1));
+            writeSentences(batch);
+
+            try
+            {
+                Process python = Runtime.getRuntime().exec("python3 /home/embeddings.py " + SENTENCE_FILE + " " + EMBEDDINGS_FILE);
+                int ret = python.waitFor();
+
+                if (ret != 0)
+                {
+                    cleanup();
+                    return false;
+                }
+
+                List<List<Double>> embeddings = readEmbeddings();
+                int embeddingsCount = embeddings.size();
+                cleanup();
+
+                for (int entity = 0; entity < embeddingsCount; entity++)
+                {
+                    this.index.add(batch.get(entity).uri(), embeddings.get(entity));
+                }
+            }
+
+            catch (IOException | InterruptedException e)
+            {
+                return false;
+            }
+
+            synchronized (this.mtx)
+            {
+                double fraction = (double) batch.size() / documentList.size();
+                this.progress += fraction;
+            }
+        }
 
         return true;
     }
 
-    private void insertParallel()
+    private static void writeSentences(List<Document> documents)
     {
-        List<Document> documentList = new ArrayList<>(this.documents);
-        ExecutorService threadPool = Executors.newFixedThreadPool(THREADS);
-        List<Future<?>> tasks = new ArrayList<>();
-        final int entityCount = this.documents.size(), splitSize = 10000, iterations = (int) Math.ceil((double) entityCount / splitSize);
-
-        for (int i = 0; i < iterations; i++)
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(SENTENCE_FILE)))
         {
-            List<Document> subset = documentList.subList(i * splitSize, Math.min((i + 1) * splitSize, entityCount - 1));
-            Future<?> task = threadPool.submit(() -> insertEntities(new HashSet<>(subset)));
-            tasks.add(task);
-        }
-
-        tasks.forEach(f -> {
-            try
+            for (Document document : documents)
             {
-                f.get();
+                String text = "The graph model contains an entity describing ";
+                text += !document.label().isEmpty() ? document.label() :
+                        document.uri().substring(document.uri().lastIndexOf('/') + 1).replace("_", " ");
+                writer.write(text);
+                writer.newLine();
             }
 
-            catch (InterruptedException | ExecutionException ignored) {}
-        });
+            writer.flush();
+        }
+
+        catch (IOException e)
+        {
+            throw new RuntimeException(e);
+        }
     }
 
-    private void insertEntities(Set<Document> documents)
+    private static List<List<Double>> readEmbeddings()
     {
-        for (Document document : documents)
+        try (BufferedReader reader = new BufferedReader(new FileReader(EMBEDDINGS_FILE)))
         {
-            String text = !document.label().isEmpty() ? document.label() :
-                    document.uri().substring(document.uri().lastIndexOf('/') + 1);
-            List<Double> embedding = embedding(text);
+            String line;
+            List<List<Double>> embeddings = new ArrayList<>();
 
-            if (embedding != null)
+            while ((line = reader.readLine()) != null)
             {
-                synchronized (this.mtx)
+                List<Double> embedding = new ArrayList<>();
+
+                for (String strVal : line.split(" "))
                 {
-                    this.index.add(document.uri(), embedding);
-                    this.progress += (double) 1 / this.documents.size();
+                    try
+                    {
+                        double val = Double.parseDouble(strVal);
+                        embedding.add(val);
+                    }
+
+                    catch (NumberFormatException ignored) {}
                 }
+
+                embeddings.add(embedding);
             }
+
+            return embeddings;
         }
+
+        catch (IOException e)
+        {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static void cleanup()
+    {
+        File sentencesFile = new File(SENTENCE_FILE);
+        sentencesFile.delete();
+
+        File embeddingsFile = new File(EMBEDDINGS_FILE);
+        embeddingsFile.delete();
     }
 
     /**
@@ -135,39 +184,41 @@ public class EmbeddingIndexer implements Indexer<String, List<Double>>, Progress
      */
     public static List<Double> embedding(String text)
     {
-        String[] words = text.split(" ");
-        List<Double> aggregatedEmbedding = null;
+        Document doc = new Document("", text, "");
+        writeSentences(List.of(doc));
 
-        for (String word : words)
+        try
         {
-            if (!model.hasWord(word))
+            Process python = Runtime.getRuntime().exec("python3 /home/embeddings.py " + SENTENCE_FILE + " " + EMBEDDINGS_FILE);
+            int ret = python.waitFor();
+
+            if (ret != 0)
             {
-                continue;
+                cleanup();
+                return null;
             }
 
-            double[] array = model.getWordVector(word);
-            List<Double> embedding = new ArrayList<>(array.length);
-
-            for (double val : array)
-            {
-                embedding.add(val);
-            }
-
-            if (aggregatedEmbedding == null)
-            {
-                aggregatedEmbedding = embedding;
-            }
-
-            else
-            {
-                List<Double> copy = new ArrayList<>(aggregatedEmbedding);
-                aggregatedEmbedding = IntStream.range(0, embedding.size())
-                        .mapToObj(i -> copy.get(i) + embedding.get(i))
-                        .collect(Collectors.toList());
-            }
+            return readEmbeddings().get(0);
         }
 
-        return aggregatedEmbedding;
+        catch (IOException | InterruptedException e)
+        {
+            return null;
+        }
+
+        finally
+        {
+            cleanup();
+        }
+    }
+
+    @Override
+    public double progress()
+    {
+        synchronized (this.mtx)
+        {
+            return this.progress;
+        }
     }
 
     @Override

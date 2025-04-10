@@ -108,7 +108,7 @@ public class Main
         DataReader reader = new DataReader(kgDirectory, config.domain().isEmpty() ? null : config.domain());
         Set<Document> documents = reader.read(true);
         LuceneIndexer luceneIndexer = LuceneIndexer.create(config, directory, documents);
-        EmbeddingIndexer embeddingIndexer = EmbeddingIndexer.create(documents, true);
+        EmbeddingIndexer embeddingIndexer = EmbeddingIndexer.create(documents);
         ExecutorService executor = Executors.newFixedThreadPool(2);
         Future<Boolean> luceneIndexerFuture = executor.submit(luceneIndexer::constructIndex);
         Future<Boolean> embeddingsIndexerFuture = executor.submit(embeddingIndexer::constructIndex);
@@ -144,10 +144,8 @@ public class Main
         else
         {
             Duration duration = Duration.between(start, Instant.now());
-            System.out.println("Indexing done in " + duration.toString().substring(2).toLowerCase());
+            System.out.println("Indexing done in " + duration.toString().substring(2));
         }
-
-        progressWatcher.interrupt();
     }
 
     private static void link(Set<ArgParser.Parameter> parameters)

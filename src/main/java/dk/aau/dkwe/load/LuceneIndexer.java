@@ -72,6 +72,6 @@ public class LuceneIndexer implements Indexer<String, Map<String, Double>>, Prog
     @Override
     public double progress()
     {
-        return (double) LuceneIndexBuilder.insertCount() / this.documents.size();
+        return LuceneIndexBuilder.progress();
     }
 }
