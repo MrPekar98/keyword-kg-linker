@@ -4,7 +4,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>dk.aau.dkwe</groupId>
+    <groupId>anonymous</groupId>
     <artifactId>keyword-kg-linker</artifactId>
     <version>1.0</version>
 
@@ -89,7 +89,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>dk.aau.dkwe.Main</mainClass>
+                            <mainClass>anonymous.Main</mainClass>
                         </manifest>
                     </archive>
                     <descriptorRefs>
