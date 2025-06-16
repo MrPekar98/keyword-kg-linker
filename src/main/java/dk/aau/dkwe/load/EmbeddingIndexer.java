@@ -220,13 +220,4 @@ public class EmbeddingIndexer implements Indexer<String, List<Double>>, Progress
             return this.progress;
         }
     }
-
-    @Override
-    public double progress()
-    {
-        synchronized (this.mtx)
-        {
-            return this.progress;
-        }
-    }
 }
