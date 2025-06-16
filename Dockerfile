@@ -14,7 +14,7 @@ ADD ${CONFIG_FILE} .
 ADD pom.xml .
 ADD src/ src/
 ADD embeddings.py .
-RUN ./apache-maven-3.9.5/bin/mvn package
+RUN ./apache-maven-3.9.10/bin/mvn package
 RUN mv target/keyword-kg-linker*with-dependencies.jar keywork-linker.jar
 
 CMD []
